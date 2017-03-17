@@ -1,0 +1,975 @@
+1
+00:00:00,000 --> 00:00:06,089
+welcome everyone to the first lecture of new course deep learning for natural
+
+2
+00:00:06,089 --> 00:00:11,519
+processing time for quantum i'm lecturer here in the computer science
+
+3
+00:00:11,519 --> 00:00:16,590
+although I spend most of my at a company called deepmind in
+
+4
+00:00:16,590 --> 00:00:24,869
+London four days a week there and this will be a collaboration between
+
+5
+00:00:24,869 --> 00:00:30,869
+computer science department and deep mind and so we we've got for you a range
+
+6
+00:00:30,869 --> 00:00:35,910
+different speakers mostly from deepmind a few other places and you get
+
+7
+00:00:35,910 --> 00:00:42,420
+meet during the course of this lecture so let's get started so that the
+
+8
+00:00:42,420 --> 00:00:46,800
+of first starting side is why you be here and take this course
+
+9
+00:00:46,800 --> 00:00:52,110
+the key reason you should take this we're interested in language this
+
+10
+00:00:52,110 --> 00:00:55,800
+is going to be about language is gonna about the computational processing of
+
+11
+00:00:55,800 --> 00:01:00,629
+and how it relates to intelligence artificial
+
+12
+00:01:00,629 --> 00:01:05,640
+is a pretty hot topic at moment in in computer science and
+
+13
+00:01:05,640 --> 00:01:12,330
+in general and hopefully by the of this you'll agree with me that
+
+14
+00:01:12,330 --> 00:01:17,670
+is really one of the most aspect of intelligence worthy
+
+15
+00:01:17,670 --> 00:01:24,630
+of a study so historically language linguistics has been very
+
+16
+00:01:24,630 --> 00:01:29,490
+associated with AI maybe some say too much so so through the
+
+17
+00:01:29,490 --> 00:01:34,829
+half of the 20th century a lot of and I was language-based not not a
+
+18
+00:01:34,829 --> 00:01:39,360
+lot of progress was made people away from language recently quite
+
+19
+00:01:39,360 --> 00:01:43,829
+lot of progress has been made and now coming back to this problem of
+
+20
+00:01:43,829 --> 00:01:50,340
+do we deal with intelligence and language is cool because it's
+
+21
+00:01:50,340 --> 00:01:56,189
+it's how we communicate but it's than just communication so we
+
+22
+00:01:56,189 --> 00:01:58,770
+just simplistically think of is a way of conveying ideas
+
+23
+00:01:58,770 --> 00:02:05,490
+us but we can think of a way of provoking concepts in people we speak to
+
+24
+00:02:05,490 --> 00:02:11,819
+if i say the word dog that's just a wave but now all of you I can vote
+
+25
+00:02:11,819 --> 00:02:15,020
+concept of a doll little for like a very creature in your
+
+26
+00:02:15,020 --> 00:02:19,490
+mind and you all have slightly different concepts of dog but just by using the
+
+27
+00:02:19,490 --> 00:02:24,020
+the medium of language I can invoke that in you so language more than
+
+28
+00:02:24,020 --> 00:02:26,900
+it's a it's an interesting phenomena
+
+29
+00:02:26,900 --> 00:02:30,920
+when we still don't really that well so that's why this
+
+30
+00:02:30,920 --> 00:02:35,180
+on how to process language as well seeing this course but also we
+
+31
+00:02:35,180 --> 00:02:41,270
+fully understand how humans learn how children come to be so
+
+32
+00:02:41,270 --> 00:02:45,380
+language so quickly with so that stimulus
+
+33
+00:02:45,380 --> 00:02:49,430
+ok so hopefully that's a bit of high-level motivation so some
+
+34
+00:02:49,430 --> 00:02:53,239
+nitty-gritty details about this course is a webpage anything is anything
+
+35
+00:02:53,239 --> 00:02:59,209
+interesting on it yet maybe they will be later on we'll see these
+
+36
+00:02:59,209 --> 00:03:03,200
+are being recorded on how difficult it proves to
+
+37
+00:03:03,200 --> 00:03:07,610
+hopefully I've got to put them up so you can review them but it may take
+
+38
+00:03:07,610 --> 00:03:12,860
+time then then i might have to do there's no textbook for this course
+
+39
+00:03:12,860 --> 00:03:18,860
+and partly because a lot of the things we'll discuss a client new and most of
+
+40
+00:03:18,860 --> 00:03:22,340
+things especially the second half for the course relates to research
+
+41
+00:03:22,340 --> 00:03:26,690
+done in the last two or three but there are some good general
+
+42
+00:03:26,690 --> 00:03:31,880
+text is a very new textbook on deep from me a good fellow and and
+
+43
+00:03:31,880 --> 00:03:38,750
+men do it all for deep learning you get that in physical form or the
+
+44
+00:03:38,750 --> 00:03:42,440
+has the PDF that you can so that's a very useful
+
+45
+00:03:42,440 --> 00:03:47,690
+it covers deep learning in does and this chapters that are
+
+46
+00:03:47,690 --> 00:03:51,260
+relevant particular recurrent network chapter which could be
+
+47
+00:03:51,260 --> 00:03:55,640
+useful to you and then there's a lot of textbooks in general machine
+
+48
+00:03:55,640 --> 00:04:00,620
+learning so particularly the the Murphy machine-learning out lift off
+
+49
+00:04:00,620 --> 00:04:05,090
+earth also there but that's Murphy the bishop takes textbook you'll
+
+50
+00:04:05,090 --> 00:04:08,120
+those in the library's i think i've in the past for machine learning
+
+51
+00:04:08,120 --> 00:04:14,870
+so they may be in your in your libraries obviously the lectures
+
+52
+00:04:14,870 --> 00:04:21,799
+runs on tuesday at 46 and the other on Thursday also from 46 slightly different
+
+53
+00:04:21,799 --> 00:04:25,700
+other courses in in cs5 allocated two hours for the
+
+54
+00:04:25,700 --> 00:04:29,540
+that doesn't mean elections going to go for two hours but i just thought
+
+55
+00:04:29,540 --> 00:04:35,390
+I'd allocate plenty of time I find one hour bit too short sometimes we're going
+
+56
+00:04:35,390 --> 00:04:39,500
+to have lots of invited speakers some of week so i might have we might put
+
+57
+00:04:39,500 --> 00:04:42,860
+of two hour long lectures back-to-back in one of the slots on
+
+58
+00:04:42,860 --> 00:04:46,010
+weeks that might be quite sure i'll try that you know beforehand
+
+59
+00:04:46,010 --> 00:04:49,730
+what's what's happening in this week we'll probably use most of
+
+60
+00:04:49,730 --> 00:04:55,700
+two hours today and and on thursday so there will be no lectures next week
+
+61
+00:04:55,700 --> 00:05:00,080
+so most of the people involved in the are away in Germany on a seminar
+
+62
+00:05:00,080 --> 00:05:03,170
+next week so there's gonna be no they will however be practical
+
+63
+00:05:03,170 --> 00:05:07,010
+week so don't forget that so they're gonna be seven practical
+
+64
+00:05:07,010 --> 00:05:11,120
+I think they're on mondays and fridays but you should check the
+
+65
+00:05:11,120 --> 00:05:15,740
+timetable you've got some excellent in brandon yiannis an
+
+66
+00:05:15,740 --> 00:05:20,360
+issue all graduate students here in the department and experience deep learning
+
+67
+00:05:20,360 --> 00:05:26,450
+so they should be very handy for you learning the practical
+
+68
+00:05:26,450 --> 00:05:32,630
+of the course they should be of those from six to eight and
+
+69
+00:05:32,630 --> 00:05:37,190
+finally the assistant will be a total take-home exam of the form that
+
+70
+00:05:37,190 --> 00:05:42,830
+will MC students amongst you familiar with from last term
+
+71
+00:05:42,830 --> 00:05:49,130
+ok so practical details rough lecture so I I make no promises that i
+
+72
+00:05:49,130 --> 00:05:52,970
+keep this all that these will be people giving lectures but roughly
+
+73
+00:05:52,970 --> 00:05:57,560
+we're going to do is today after my introduction
+
+74
+00:05:57,560 --> 00:06:03,080
+I'll introduce wangling from a deep mind who's going to give you an introduction
+
+75
+00:06:03,080 --> 00:06:09,350
+or or hopefully a review of basic learning and neural network
+
+76
+00:06:09,350 --> 00:06:14,030
+from first principles how to up to the backpropagation
+
+77
+00:06:14,030 --> 00:06:19,280
+and then on Thursday and Griffin step we'll talk about lexical
+
+78
+00:06:19,280 --> 00:06:24,170
+and i also have I think chris is going to come up as well maybe talk a
+
+79
+00:06:24,170 --> 00:06:29,330
+bit about what we hope to do in practical sessions and I said week
+
+80
+00:06:29,330 --> 00:06:32,300
+too no lectures so that your next week week
+
+81
+00:06:32,300 --> 00:06:35,480
+i'm going to talk about recurrent networks and language modeling
+
+82
+00:06:35,480 --> 00:06:41,280
+very issues involved in those I'm how to make them go fast then after
+
+83
+00:06:41,280 --> 00:06:45,509
+we're going to run through lots of applications of these models like go
+
+84
+00:06:45,509 --> 00:06:51,270
+them all here but i will have a of guest lectures from deepmind
+
+85
+00:06:51,270 --> 00:06:57,090
+hopefully i'm jeremy from video will up and tell you a bit about gpus
+
+86
+00:06:57,090 --> 00:07:01,139
+why GPUs are important for these sorts models and you the graphic graphics
+
+87
+00:07:01,139 --> 00:07:04,620
+unit if you haven't come it before they happen to be the
+
+88
+00:07:04,620 --> 00:07:10,919
+device of choice to run models on so hopefully we'll get a
+
+89
+00:07:10,919 --> 00:07:17,310
+letter from video on those and then that you have a second after this course will
+
+90
+00:07:17,310 --> 00:07:21,960
+look at applications of these in translation and speech and
+
+91
+00:07:21,960 --> 00:07:27,810
+understanding so I prerequisites so this is not meant to be
+
+92
+00:07:27,810 --> 00:07:31,740
+introduction to machine learning so hopefully you've all got some
+
+93
+00:07:31,740 --> 00:07:35,310
+of machine learning you may find this a bit opaque
+
+94
+00:07:35,310 --> 00:07:40,590
+so at least you should understand of taking courses in linear algebra
+
+95
+00:07:40,590 --> 00:07:45,090
+probability so the courses that student here in their
+
+96
+00:07:45,090 --> 00:07:49,560
+year computer science degree are adequate and that is what's
+
+97
+00:07:49,560 --> 00:07:54,509
+those courses adequate maybe not you remember from them so if you
+
+98
+00:07:54,509 --> 00:07:57,479
+can't remember that review those ideas not going to do anything
+
+99
+00:07:57,479 --> 00:08:02,759
+challenging in those areas basic ideas from those areas will be
+
+100
+00:08:02,759 --> 00:08:08,340
+so machine learning other side is introduction machine learning course
+
+101
+00:08:08,340 --> 00:08:11,969
+will be very useful if you've taken introduction of machine learning
+
+102
+00:08:11,969 --> 00:08:16,560
+that was offered last term or year here in the department or
+
+103
+00:08:16,560 --> 00:08:21,060
+equivalent at the very least should have an idea of how to what
+
+104
+00:08:21,060 --> 00:08:25,409
+means to train and evaluate machine model and how to split up your
+
+105
+00:08:25,409 --> 00:08:28,650
+data and how to keep your test separate from your training data
+
+106
+00:08:28,650 --> 00:08:31,770
+all these basic issues machine learning so you can actually work out
+
+107
+00:08:31,770 --> 00:08:37,229
+your model works or not you should what overfitting generalization and
+
+108
+00:08:37,229 --> 00:08:40,289
+regularization mean that's very 
+
+109
+00:08:40,289 --> 00:08:42,990
+learning is all about that's the whole point
+
+110
+00:08:42,990 --> 00:08:46,410
+how to generalize from what we see in past to what's going to happen in
+
+111
+00:08:46,410 --> 00:08:51,680
+future optimization so you should have knowledge of what
+
+112
+00:08:51,680 --> 00:08:56,779
+gradient descent is stochastic gradient hopefully its various variants
+
+113
+00:08:56,779 --> 00:09:02,089
+a great and such things hopefully come across these if not some reviewing
+
+114
+00:09:02,089 --> 00:09:05,779
+be in order and also basic algorithm flight linear regression
+
+115
+00:09:05,779 --> 00:09:09,440
+and definitely a little of neural networks and back
+
+116
+00:09:09,440 --> 00:09:13,190
+propagation when will go through those but hopefully that will be a
+
+117
+00:09:13,190 --> 00:09:20,480
+for you rather than introduction finally for the practicals so
+
+118
+00:09:20,480 --> 00:09:22,940
+impractical to be implementing these are you going to need to know how
+
+119
+00:09:22,940 --> 00:09:26,660
+program we're not going to teach you program we're not going to tell you
+
+120
+00:09:26,660 --> 00:09:30,769
+language or talking to use those so it's up to you what you
+
+121
+00:09:30,769 --> 00:09:33,470
+to do I've listed some here that a popular so
+
+122
+00:09:33,470 --> 00:09:39,050
+torch tensorflow piano and and dinette these are all good tool kits for
+
+123
+00:09:39,050 --> 00:09:45,500
+your network models torches lowers a programming language the others
+
+124
+00:09:45,500 --> 00:09:50,269
+python-based or C++ so you should choose you're comfortable with and
+
+125
+00:09:50,269 --> 00:09:54,680
+make use of that and there you're going to be given a lot of help in
+
+126
+00:09:54,680 --> 00:09:57,920
+to program while learning those tickets so you should be confident in
+
+127
+00:09:57,920 --> 00:10:05,600
+going out to pick up those things ok so going back to that the court in
+
+128
+00:10:05,600 --> 00:10:08,690
+this course is about from the you can guess deep learning for
+
+129
+00:10:08,690 --> 00:10:11,720
+language processing there's a lot more than natural language
+
+130
+00:10:11,720 --> 00:10:15,470
+and computational linguistics and deep learning so that this is not a
+
+131
+00:10:15,470 --> 00:10:19,699
+course in comfort linguistics you shouldn't
+
+132
+00:10:19,699 --> 00:10:23,329
+out the end of this course thinking deep learning is the answer to all
+
+133
+00:10:23,329 --> 00:10:27,860
+in language or that we're going get to a i simply by building bigger
+
+134
+00:10:27,860 --> 00:10:32,540
+bigger recurrent neural networks course is really about looking at
+
+135
+00:10:32,540 --> 00:10:36,500
+developments in deep learning and and some particular successes
+
+136
+00:10:36,500 --> 00:10:40,640
+these models are very effective lots of things or areas within
+
+137
+00:10:40,640 --> 00:10:46,850
+effective so it's just a caveat to with two not not feel that this is
+
+138
+00:10:46,850 --> 00:10:52,310
+there is to know about machine language and also language in
+
+139
+00:10:52,310 --> 00:10:56,959
+in particular in terms of where we're at iron language we still very much
+
+140
+00:10:56,959 --> 00:11:01,560
+the surface of a the phenomenon is language we're a long
+
+141
+00:11:01,560 --> 00:11:07,410
+from real conceptual reasoning about and so whether the techniques
+
+142
+00:11:07,410 --> 00:11:10,230
+will discover in this clip that discussing this course will get us there
+
+143
+00:11:10,230 --> 00:11:16,230
+an open question but you should have open mind about these areas and and
+
+144
+00:11:16,230 --> 00:11:22,680
+feel that while these techniques impressive results they're not the
+
+145
+00:11:22,680 --> 00:11:27,300
+way of approaching things so we a brief review of some of the
+
+146
+00:11:27,300 --> 00:11:31,830
+that we might look at this course hopefully to stimulate some interest so
+
+147
+00:11:31,830 --> 00:11:37,440
+understanding is a core problem we want we want to solve in in
+
+148
+00:11:37,440 --> 00:11:44,040
+processing so we want models that can hear or read texts and
+
+149
+00:11:44,040 --> 00:11:47,310
+what is being said one way of understanding is to ask
+
+150
+00:11:47,310 --> 00:11:51,270
+so a classic problem in understanding is with your
+
+151
+00:11:51,270 --> 00:11:55,350
+comprehension so later on in the will discuss reading
+
+152
+00:11:55,350 --> 00:12:01,530
+models this particular is from a data set we created
+
+153
+00:12:01,530 --> 00:12:05,460
+the deep mind where we took news this one from the CNN about
+
+154
+00:12:05,460 --> 00:12:11,040
+Jeremy Clarkson punching his executive and then ask questions of them
+
+155
+00:12:11,040 --> 00:12:14,400
+train models to try to answer these if you look at this particular
+
+156
+00:12:14,400 --> 00:12:20,070
+question is asking who will not press against Jeremy Clarkson if you
+
+157
+00:12:20,070 --> 00:12:23,430
+at the article to answer this the model needs to be on a
+
+158
+00:12:23,430 --> 00:12:27,090
+stitch together a few bits of different of information needs to understand
+
+159
+00:12:27,090 --> 00:12:34,050
+the opening sentence that it was a who will not press charges and
+
+160
+00:12:34,050 --> 00:12:39,510
+later on in the article producers named as poison time and so a
+
+161
+00:12:39,510 --> 00:12:41,820
+needs to be able to put those together and understand that
+
+162
+00:12:41,820 --> 00:12:47,460
+a first event of of the assault and in the second event of the naming of
+
+163
+00:12:47,460 --> 00:12:51,660
+producer and be able to put these bits of information together so it's a
+
+164
+00:12:51,660 --> 00:12:54,720
+cool and challenging task and it's one we're a long way from doing
+
+165
+00:12:54,720 --> 00:13:02,460
+but we have some models you do respective respectively on such
+
+166
+00:13:02,460 --> 00:13:07,860
+tasks will look at those and one of the areas weird deep learning has had a lot
+
+167
+00:13:07,860 --> 00:13:11,950
+success in language is an article 
+
+168
+00:13:11,950 --> 00:13:18,220
+asks so any task we are trying to take a usually a sequence and convert
+
+169
+00:13:18,220 --> 00:13:20,890
+it into it structure normally another
+
+170
+00:13:20,890 --> 00:13:24,940
+so classic example to the recognition in speech recognition
+
+171
+00:13:24,940 --> 00:13:29,950
+get a sequence of audio signals and want to transduce that into the
+
+172
+00:13:29,950 --> 00:13:35,770
+text that was spoken machine is also another classic
+
+173
+00:13:35,770 --> 00:13:38,890
+task when you get a of symbols in one language in
+
+174
+00:13:38,890 --> 00:13:42,460
+case French and you want to that into the equivalent
+
+175
+00:13:42,460 --> 00:13:45,910
+sequence in English if you put these you can do things like
+
+176
+00:13:45,910 --> 00:13:51,370
+translation and if you to apps like google translate on the
+
+177
+00:13:51,370 --> 00:13:56,410
+now you can speak to them they will and convert that audio signal
+
+178
+00:13:56,410 --> 00:14:00,010
+intertext i'll try and translate that into another language for you and
+
+179
+00:14:00,010 --> 00:14:04,960
+speak that back to you up until a few years ago these all
+
+180
+00:14:04,960 --> 00:14:10,570
+problems were done with certain in the last couple of years all
+
+181
+00:14:10,570 --> 00:14:16,600
+these properties industrial systems moved to deep learning models
+
+182
+00:14:16,600 --> 00:14:20,560
+big recurrent neural networks a recognition machine translation
+
+183
+00:14:20,560 --> 00:14:26,020
+all done with big recurrent networks and text-to-speech as well is moving
+
+184
+00:14:26,020 --> 00:14:31,330
+that direction so we'll cover these the course of a couple of weeks
+
+185
+00:14:31,330 --> 00:14:35,530
+fun sort of tasks that will look later on to become popular is image
+
+186
+00:14:35,530 --> 00:14:41,320
+so one of the great things deep learning an approach to
+
+187
+00:14:41,320 --> 00:14:45,010
+language is a is it the same that we use for processing
+
+188
+00:14:45,010 --> 00:14:51,190
+now so doing has had a lot of in image recognition object
+
+189
+00:14:51,190 --> 00:14:55,510
+and classification and we're now using the same models
+
+190
+00:14:55,510 --> 00:14:58,990
+processing images as we're using the language it becomes very easy to put
+
+191
+00:14:58,990 --> 00:15:02,560
+together so now it's straightforward to take a model that
+
+192
+00:15:02,560 --> 00:15:07,660
+objects and images and stick together with a language model that
+
+193
+00:15:07,660 --> 00:15:12,100
+language train these together we can train models to caption
+
+194
+00:15:12,100 --> 00:15:16,450
+if we have examples of images and their captions and we can also train
+
+195
+00:15:16,450 --> 00:15:21,760
+to answer questions about images so this is a data set that was produced
+
+196
+00:15:21,760 --> 00:15:26,190
+task visual question answering have lots of images and questions
+
+197
+00:15:26,190 --> 00:15:30,300
+those images what's happening so straightforward questions in a
+
+198
+00:15:30,300 --> 00:15:35,340
+class by my get right like what is the holding two more influential
+
+199
+00:15:35,340 --> 00:15:39,060
+like does this man have twenty-twenty vision obviously their
+
+200
+00:15:39,060 --> 00:15:42,090
+model needs to understand something vision being related to the
+
+201
+00:15:42,090 --> 00:15:45,540
+wearing that being an indication he probably doesn't have
+
+202
+00:15:45,540 --> 00:15:52,800
+twenty-twenty vision so I'm this one of the real contributions of the move
+
+203
+00:15:52,800 --> 00:15:56,340
+to deep learning language processing has the ability to the bolt together
+
+204
+00:15:56,340 --> 00:16:02,430
+from vision and other modalities simply and get these sort of models
+
+205
+00:16:02,430 --> 00:16:10,080
+so we're not going to deal too much with structure
+
+206
+00:16:10,080 --> 00:16:14,490
+they're the sorts of things that that learning does well in language at
+
+207
+00:16:14,490 --> 00:16:20,250
+moment is still very much at the behaviorism end of the spectrum that is
+
+208
+00:16:20,250 --> 00:16:24,180
+input to output so we're a long from any sort of conceptual
+
+209
+00:16:24,180 --> 00:16:28,470
+about things and in this will mostly stay low level and
+
+210
+00:16:28,470 --> 00:16:33,090
+and look at sort of how do we transduce an audio signal into the the text that
+
+211
+00:16:33,090 --> 00:16:37,350
+along with that or a French into english sentence but you
+
+212
+00:16:37,350 --> 00:16:41,160
+should never forget there's a lot more than just these shallow aspects
+
+213
+00:16:41,160 --> 00:16:45,840
+so here are some classic examples of us at a random selection of language
+
+214
+00:16:45,840 --> 00:16:48,780
+that we should not forget when when trying to process language so the
+
+215
+00:16:48,780 --> 00:16:54,540
+one there is a classic since so I saw a duck is it a is a
+
+216
+00:16:54,540 --> 00:17:00,540
+ducking is in the physical motion or the the bird got idioms so one of
+
+217
+00:17:00,540 --> 00:17:04,380
+wonderful things about language is its compositionality so language follows
+
+218
+00:17:04,380 --> 00:17:08,820
+looks like sort of logical rules how we can compose the words to
+
+219
+00:17:08,820 --> 00:17:12,330
+get the meaning of a sentence so he the goal the composition is
+
+220
+00:17:12,330 --> 00:17:17,820
+the same as he takes the ball we're just changing that the noun
+
+221
+00:17:17,820 --> 00:17:22,260
+there but it doesn't always work in the classic medium of he kicked
+
+222
+00:17:22,260 --> 00:17:25,380
+bucket of course that doesn't mean about kicking or buckets that
+
+223
+00:17:25,380 --> 00:17:31,080
+he died so languages compositional when it's not and this is one of
+
+224
+00:17:31,080 --> 00:17:35,700
+most challenging things for any models it's easy to write
+
+225
+00:17:35,700 --> 00:17:39,840
+logical systems and processes simple but as soon as you let that
+
+226
+00:17:39,840 --> 00:17:44,670
+in the wild someone will say that doesn't fit your logical
+
+227
+00:17:44,670 --> 00:17:49,680
+and you'll have to deal with this of thing so at the end of the
+
+228
+00:17:49,680 --> 00:17:53,430
+will touch a bit on these issues how we start to think about the the
+
+229
+00:17:53,430 --> 00:17:57,450
+of hierarchical structure we see in the final example there is
+
+230
+00:17:57,450 --> 00:18:03,900
+called a winograd schema which these reference problems where if you
+
+231
+00:18:03,900 --> 00:18:07,830
+that sentence with the two endings so the board not fit
+
+232
+00:18:07,830 --> 00:18:11,670
+the box because it was too big four it was too small if you switch
+
+233
+00:18:11,670 --> 00:18:17,130
+and small it switches what they it to so it was too big then the
+
+234
+00:18:17,130 --> 00:18:20,730
+ball hits the ball which was too big it too small that's the box which was
+
+235
+00:18:20,730 --> 00:18:26,790
+small so getting your competition computational mole to be able to tell
+
+236
+00:18:26,790 --> 00:18:30,360
+difference between those two is very but it has to have a notion of
+
+237
+00:18:30,360 --> 00:18:34,080
+physical world of boxes and balls size and how they could fit within
+
+238
+00:18:34,080 --> 00:18:39,330
+other so that's one of the really challenges in language processing
+
+239
+00:18:39,330 --> 00:18:42,930
+we're a long way from solving but talk a bit about these sort of
+
+240
+00:18:42,930 --> 00:18:45,120
+problems later on in the 
+
+241
+00:18:45,120 --> 00:18:53,100
+ok so that's why I sort of introduction and motivational opening so the rest
+
+242
+00:18:53,100 --> 00:18:57,360
+this lecture I'm going to hand over wangling is going to give you a
+
+243
+00:18:57,360 --> 00:19:02,730
+review of how to count and add and maybe a bit about neural
+
+244
+00:19:02,730 --> 00:19:08,660
+as well with the aid of some sesame street characters
