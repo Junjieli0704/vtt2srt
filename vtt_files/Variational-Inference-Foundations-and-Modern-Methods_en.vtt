@@ -1,0 +1,7835 @@
+WEBVTT
+
+00:00:00.220 --> 00:00:01.692
+Okay, good morning everyone.
+
+00:00:01.692 --> 00:00:05.740
+We're gonna get started with our
+first tutorial in this room.
+
+00:00:05.740 --> 00:00:09.590
+This morning, we have variational
+inference, foundations and
+
+00:00:09.590 --> 00:00:10.990
+modern methods.
+
+00:00:10.990 --> 00:00:14.150
+So we have three really
+amazing speakers this morning.
+
+00:00:14.150 --> 00:00:17.770
+First, we have Dave Bly,
+who's a professor of statistics and
+
+00:00:17.770 --> 00:00:20.080
+computer science at
+Columbia University.
+
+00:00:20.080 --> 00:00:21.690
+We also have Rajesh Ringanak,
+
+00:00:21.690 --> 00:00:25.010
+who is a PhD student at
+Princeton University.
+
+00:00:25.010 --> 00:00:26.228
+And Shakir Mohamed,
+
+00:00:26.228 --> 00:00:29.414
+who is a senior research
+scientist at Google Deepmind.
+
+00:00:29.414 --> 00:00:31.840
+And, I don't wanna eat into
+their time anymore, so
+
+00:00:31.840 --> 00:00:33.890
+without further ado,
+let's get started.
+
+00:00:35.120 --> 00:00:35.670
+>> Thanks, Tamara.
+
+00:00:37.000 --> 00:00:40.440
+Thanks for the opportunity to tell
+you about variational inference.
+
+00:00:40.440 --> 00:00:43.420
+Rajesh and Shakir and
+I have prepared this tutorial,
+
+00:00:43.420 --> 00:00:46.500
+Variational Inference,
+Foundations and Modern Methods.
+
+00:00:46.500 --> 00:00:49.980
+We prepared about a seven and
+a half hour tutorial, so
+
+00:00:49.980 --> 00:00:50.810
+I'm gonna get started.
+
+00:00:53.378 --> 00:00:57.278
+Also I wanna mention that two of us
+are jet lagged, and Shakir is not
+
+00:00:57.278 --> 00:01:01.190
+a morning person, so but I imagine
+many of you are in the same boat.
+
+00:01:03.606 --> 00:01:07.800
+Also, the echo is distracting but
+I'll get used to it.
+
+00:01:07.800 --> 00:01:11.290
+So we'll start with
+just some pictures.
+
+00:01:11.290 --> 00:01:14.240
+These are pictures of things you
+can do with variational inference.
+
+00:01:14.240 --> 00:01:17.080
+This is a picture of overlapping
+communities discovered from
+
+00:01:17.080 --> 00:01:18.060
+a huge network.
+
+00:01:18.060 --> 00:01:19.800
+This is a picture of topics.
+
+00:01:19.800 --> 00:01:21.850
+We'll talk about topics in
+more detail in a little bit,
+
+00:01:21.850 --> 00:01:26.230
+found from two million articles on
+the New York Times using a laptop.
+
+00:01:26.230 --> 00:01:30.100
+This is a picture of using
+variational inference to learn about
+
+00:01:30.100 --> 00:01:33.510
+scenes, and to do control and
+reinforcement learning.
+
+00:01:34.760 --> 00:01:38.033
+This is a picture of a genetics
+analysis at large scale,
+
+00:01:38.033 --> 00:01:41.657
+a important model in population
+genetics the [INAUDIBLE] model
+
+00:01:41.657 --> 00:01:45.350
+fit with variational
+inference at large scale.
+
+00:01:45.350 --> 00:01:49.610
+This is a picture of a neuroscience
+analysis of a large FMRI data set.
+
+00:01:50.970 --> 00:01:54.688
+And finally, here are some pictures
+representing how we might do
+
+00:01:54.688 --> 00:01:59.150
+compression, or generate content
+using variational inference.
+
+00:01:59.150 --> 00:02:02.110
+I know I didn't say anything about
+any of those pictures, but I wanna
+
+00:02:02.110 --> 00:02:07.476
+give you the sense of the breadth of
+applications of variation inference.
+
+00:02:07.476 --> 00:02:10.618
+And there's one more,
+this is the picture of analyzing 1.7
+
+00:02:10.618 --> 00:02:14.120
+million taxi trajectories using
+a probabilistic programming system
+
+00:02:14.120 --> 00:02:16.450
+called Stan,
+using variational inference.
+
+00:02:17.540 --> 00:02:21.980
+Okay, so all those pictures and
+the extra picture
+
+00:02:21.980 --> 00:02:25.270
+go through what we like to call
+the probabilistic pipeline.
+
+00:02:25.270 --> 00:02:31.310
+In a cartoon, this is the
+probabilistic pipeline where, okay,
+
+00:02:31.310 --> 00:02:33.090
+can you see that little green dot?
+
+00:02:33.090 --> 00:02:36.010
+And you can't see it over there.
+
+00:02:36.010 --> 00:02:39.740
+Where we take our knowledge and
+our question that we wanna ask about
+
+00:02:39.740 --> 00:02:43.068
+some data, use it to make some
+assumptions about the data,
+
+00:02:43.068 --> 00:02:45.811
+and turn those assumptions
+into a model, okay?
+
+00:02:45.811 --> 00:02:48.453
+The model has hidden quantities,
+which are represented as hidden
+
+00:02:48.453 --> 00:02:50.950
+random variables and
+observed quantities.
+
+00:02:50.950 --> 00:02:54.620
+Then we square our data and
+our model together,
+
+00:02:54.620 --> 00:02:57.293
+to discover patterns in the data.
+
+00:02:57.293 --> 00:03:00.064
+And we use those discovered
+patterns to form predictions, and
+
+00:03:00.064 --> 00:03:03.750
+explore the data, answer the
+question that we started out with.
+
+00:03:03.750 --> 00:03:07.010
+I like this picture because
+customized data analysis has
+
+00:03:07.010 --> 00:03:09.000
+become important to many fields.
+
+00:03:09.000 --> 00:03:12.748
+And this pipeline separates these
+key activities, making assumptions,
+
+00:03:12.748 --> 00:03:16.567
+doing computation, and then applying
+the results of those computations.
+
+00:03:16.567 --> 00:03:19.521
+And this makes it easy to
+collaborate with domain experts on
+
+00:03:19.521 --> 00:03:22.190
+problems, and statistics,
+and machine learning.
+
+00:03:23.560 --> 00:03:27.085
+Now you can see from this picture,
+that the key algorithmic problem is
+
+00:03:27.085 --> 00:03:30.430
+how to take your model that has
+hidden and observed variables, and
+
+00:03:30.430 --> 00:03:33.657
+your data, and uncover the values
+of the hidden variables given
+
+00:03:33.657 --> 00:03:34.993
+the observed variables.
+
+00:03:34.993 --> 00:03:38.160
+That's inference, that's the subject
+of this morning's tutorial.
+
+00:03:38.160 --> 00:03:42.423
+Inference answers the question, what
+does my model that I developed based
+
+00:03:42.423 --> 00:03:45.412
+on my knowledge and
+my questions say about the data?
+
+00:03:45.412 --> 00:03:49.387
+And our goal in building
+probabilistic machine learning as
+
+00:03:49.387 --> 00:03:54.247
+a field is to develop general and
+scale-able approaches to inference.
+
+00:03:54.247 --> 00:03:57.062
+We wanna be able to lubricate this
+pipeline so that we can try many,
+
+00:03:57.062 --> 00:03:59.982
+many different models, answer many
+different kinds of questions,
+
+00:03:59.982 --> 00:04:02.010
+analyze many different
+kinds of data.
+
+00:04:02.010 --> 00:04:04.930
+But to do that we need easy ways
+to compute about each model with
+
+00:04:04.930 --> 00:04:05.610
+our data sets.
+
+00:04:05.610 --> 00:04:06.970
+And we need to compute
+with them at scale.
+
+00:04:08.820 --> 00:04:12.040
+Moreover, this picture is
+actually hiding a loop, right?
+
+00:04:12.040 --> 00:04:14.750
+Really what we wanna do once
+we've lubricated this pipe line,
+
+00:04:14.750 --> 00:04:18.710
+is go back and revise our model,
+and work with data and models.
+
+00:04:18.710 --> 00:04:22.670
+In this loop where we criticize
+our model, revise our model,
+
+00:04:22.670 --> 00:04:26.930
+do inference, look at the results,
+criticize, revise, and so on, okay?
+
+00:04:26.930 --> 00:04:29.300
+This is our vision for
+probabilistic machine learning.
+
+00:04:30.980 --> 00:04:34.511
+Okay, so first I wanna
+give some main ideas and
+
+00:04:34.511 --> 00:04:38.330
+historical context for
+variational inference.
+
+00:04:38.330 --> 00:04:39.819
+The problem of general and
+
+00:04:39.819 --> 00:04:42.740
+scale-able inference
+with probability models.
+
+00:04:44.760 --> 00:04:48.350
+So the basics, I'm sure many
+of you are familiar with this.
+
+00:04:49.360 --> 00:04:53.230
+A probability model is a joint
+distribution of hidden variables z,
+
+00:04:53.230 --> 00:04:54.830
+and observed variables x, okay?
+
+00:04:54.830 --> 00:04:57.440
+So p of z comma x.
+
+00:04:57.440 --> 00:04:59.090
+Inference about
+the unknown variables,
+
+00:04:59.090 --> 00:05:02.030
+about the hidden variables, happens
+through the posterior, all right?
+
+00:05:02.030 --> 00:05:05.087
+That's the conditional distribution
+of the hidden variables given
+
+00:05:05.087 --> 00:05:08.530
+the observations, p of z given x,
+and that's the posterior.
+
+00:05:08.530 --> 00:05:13.000
+And as you all know,
+that is the ratio of the joint
+
+00:05:14.410 --> 00:05:17.887
+and the marginal probability
+of the observations p of x.
+
+00:05:19.700 --> 00:05:23.020
+For most interesting probabilistic
+models that we study in machine
+
+00:05:23.020 --> 00:05:24.550
+learning, that denominator,
+
+00:05:24.550 --> 00:05:27.260
+p of x is intractable,
+we can't compute it exactly.
+
+00:05:27.260 --> 00:05:29.320
+And so,
+we can't compute the posterior, and
+
+00:05:29.320 --> 00:05:31.760
+that's why we appeal to
+approximate posterior inference.
+
+00:05:31.760 --> 00:05:34.480
+That's why we used things like
+MCMC and variational inference.
+
+00:05:37.330 --> 00:05:39.202
+You'll see this picture
+several times this morning.
+
+00:05:39.202 --> 00:05:42.047
+So variational inference
+in a nutshell,
+
+00:05:42.047 --> 00:05:46.080
+turns inference into
+an optimization problem.
+
+00:05:46.080 --> 00:05:50.950
+So remember our goal is to
+compute p of z given x.
+
+00:05:50.950 --> 00:05:55.050
+And the way variational inference
+works is, sorry I'm gonna point at
+
+00:05:55.050 --> 00:05:59.640
+this screen, is first we positive
+variational family, what's called
+
+00:05:59.640 --> 00:06:02.810
+variational family, of distributions
+over the latent variables.
+
+00:06:02.810 --> 00:06:06.200
+Okay, so
+this is denoted q of z semicolon nu.
+
+00:06:06.200 --> 00:06:11.040
+All right, so nu are what
+are called variational parameters.
+
+00:06:11.040 --> 00:06:14.180
+They index this family
+of distributions over z,
+
+00:06:14.180 --> 00:06:15.840
+over the hidden variables.
+
+00:06:15.840 --> 00:06:19.160
+And I've represented that
+in this picture here,
+
+00:06:19.160 --> 00:06:21.010
+where it's a set, right?
+
+00:06:21.010 --> 00:06:25.077
+This circle here is a set of
+distributions over z, indexed by nu.
+
+00:06:25.077 --> 00:06:28.451
+Each point in that circle is a
+different setting of the variational
+
+00:06:28.451 --> 00:06:29.180
+parameters.
+
+00:06:30.210 --> 00:06:34.674
+The goal of variational inference,
+is to fit the variational parameters
+
+00:06:34.674 --> 00:06:38.700
+nu to be close in KL divergence
+to the exact posterior.
+
+00:06:38.700 --> 00:06:41.950
+Just for kicks,
+I'll walk over here now.
+
+00:06:43.220 --> 00:06:47.250
+So, what we wanna do is we wanna
+start at some value of nu, nu init.
+
+00:06:47.250 --> 00:06:51.000
+And we wanna search through
+this family of distributions,
+
+00:06:51.000 --> 00:06:55.500
+using an optimization procedure, to
+get to new star, where new star is
+
+00:06:55.500 --> 00:06:59.925
+close in some sense to the posterior
+distribution that we care about,
+
+00:06:59.925 --> 00:07:01.390
+p of z given x.
+
+00:07:01.390 --> 00:07:05.148
+And we are, in this tutorial, we're
+going to be close in KL divergence.
+
+00:07:05.148 --> 00:07:09.943
+We are gonna, we want a nu
+whose value is close in terms
+
+00:07:09.943 --> 00:07:12.617
+of KL of q of z and p of z, okay?
+
+00:07:12.617 --> 00:07:14.910
+And that's the objective function.
+
+00:07:14.910 --> 00:07:15.870
+All right, so in this way,
+
+00:07:15.870 --> 00:07:18.840
+we've turned inference into
+an optimization problem.
+
+00:07:18.840 --> 00:07:21.460
+Well, MCMC forms
+a Markov chain whose
+
+00:07:21.460 --> 00:07:24.660
+stationary distribution is p of z
+given x, in variational inference,
+
+00:07:24.660 --> 00:07:27.180
+what we do is we posit this
+family of distributions.
+
+00:07:27.180 --> 00:07:30.220
+Then we search through
+that family to find
+
+00:07:30.220 --> 00:07:34.300
+the member that is closest in KL
+divergence to the exact posterior to
+
+00:07:34.300 --> 00:07:36.660
+the thing we care about, all right.
+
+00:07:36.660 --> 00:07:39.280
+Now here we're gonna talk
+about KL divergences.
+
+00:07:39.280 --> 00:07:41.480
+There are other divergence measures.
+
+00:07:41.480 --> 00:07:42.894
+You could look at KL pq.
+
+00:07:42.894 --> 00:07:44.260
+You can look at other things.
+
+00:07:44.260 --> 00:07:47.240
+And those correspond to other
+methods, like EP, and BP, and
+
+00:07:47.240 --> 00:07:50.180
+other things which are also could
+be more broadly construed as
+
+00:07:50.180 --> 00:07:51.130
+variational inference.
+
+00:07:51.130 --> 00:07:54.090
+But just this morning,
+at least we're gonna focus on KLqp,
+
+00:07:54.090 --> 00:07:55.150
+all right?
+
+00:07:55.150 --> 00:07:57.710
+It's an interesting line of research
+to look at other divergences,
+
+00:07:57.710 --> 00:07:58.920
+but we won't do that here.
+
+00:08:00.720 --> 00:08:06.446
+Okay, here's a picture, here we're
+taking a mixture of gaussians.
+
+00:08:06.446 --> 00:08:09.712
+So these are data from a mixture of
+gaussians, and as we run variational
+
+00:08:09.712 --> 00:08:12.871
+inference, we are finding better,
+and better approximations of,
+
+00:08:12.871 --> 00:08:15.930
+in this case, the posterior
+predictive distribution.
+
+00:08:15.930 --> 00:08:19.340
+And so you can see that we
+converge on a posterior predictive
+
+00:08:19.340 --> 00:08:20.940
+distribution that
+looks pretty good for
+
+00:08:20.940 --> 00:08:22.790
+a mixture of gaussians
+of these data.
+
+00:08:22.790 --> 00:08:25.290
+And then we'll get to what these
+quantities are later on, but
+
+00:08:25.290 --> 00:08:27.540
+this is something like
+the KL divergence.
+
+00:08:27.540 --> 00:08:30.140
+This is the KL divergence
+up to an additive constant.
+
+00:08:30.140 --> 00:08:32.000
+And you can see that
+we're getting closer and
+
+00:08:32.000 --> 00:08:34.080
+closer to exact posterior.
+
+00:08:34.080 --> 00:08:36.860
+Okay, so this is, in a nutshell,
+stare at this picture.
+
+00:08:36.860 --> 00:08:38.640
+This is variational inference.
+
+00:08:42.120 --> 00:08:43.450
+Okay, we thought we would.
+
+00:08:43.450 --> 00:08:44.500
+I don't know where to stand.
+
+00:08:44.500 --> 00:08:45.000
+I have to admit.
+
+00:08:46.670 --> 00:08:49.470
+We thought we would say a little bit
+about the history of these methods
+
+00:08:49.470 --> 00:08:51.251
+because they've become
+important lately.
+
+00:08:52.940 --> 00:08:56.459
+What variational inference really
+is, is it's adapting ideas from
+
+00:08:56.459 --> 00:08:59.260
+statistical physics,
+to probabilistic inference.
+
+00:08:59.260 --> 00:09:03.760
+And it's hard to know when ideas
+start, but arguably, this idea began
+
+00:09:03.760 --> 00:09:08.270
+in the late 80s with the work of
+Peterson and Anderson from 1987.
+
+00:09:08.270 --> 00:09:09.983
+Who I think were physicists, and
+
+00:09:09.983 --> 00:09:13.280
+used mean field methods
+to fit a neural network.
+
+00:09:13.280 --> 00:09:16.020
+And this idea was picked up by
+Mike Jordan's lab at MIT in
+
+00:09:16.020 --> 00:09:16.985
+the early 1990s.
+
+00:09:16.985 --> 00:09:20.387
+These were people like Tommy
+Jaakkola, and Lawrence Saul, and
+
+00:09:20.387 --> 00:09:23.538
+Zoubin Ghahramani, some of
+the pioneers of this method who
+
+00:09:23.538 --> 00:09:27.210
+generalized variational inference
+to many probabilistic models.
+
+00:09:27.210 --> 00:09:28.500
+So there's a nice paper by
+
+00:09:29.640 --> 00:09:32.900
+those four authors from 1999
+that reviews that work.
+
+00:09:32.900 --> 00:09:34.150
+In parallel, Hinton and
+
+00:09:34.150 --> 00:09:38.880
+Van Camp also developed mean field
+inference for neural networks,
+
+00:09:38.880 --> 00:09:43.500
+and possibly not aware of
+the Peterson and Anderson work.
+
+00:09:45.250 --> 00:09:47.780
+And they connected that
+idea to things like
+
+00:09:47.780 --> 00:09:49.900
+The Algorithm that we all know.
+
+00:09:49.900 --> 00:09:52.895
+Which led to variational methods for
+other kinds of models,
+
+00:09:52.895 --> 00:09:54.782
+like mixtures of experts, and HMMs.
+
+00:09:54.782 --> 00:09:58.263
+One of the other pioneers here
+was the late David MacKay.
+
+00:10:01.051 --> 00:10:03.807
+Actually, there's a whole chunk
+of years missing in this history.
+
+00:10:03.807 --> 00:10:08.035
+So in the late 90s and early 2000s,
+a lot of machine learning
+
+00:10:08.035 --> 00:10:11.283
+researchers developed
+variational inference for
+
+00:10:11.283 --> 00:10:14.393
+specific models and
+generalized in some sense.
+
+00:10:14.393 --> 00:10:17.387
+We'll get to some of those
+generalizations in a little bit.
+
+00:10:17.387 --> 00:10:21.734
+And now today, there's a flurry of
+new work on variational inference
+
+00:10:21.734 --> 00:10:25.714
+and that work is about making
+variational inference scalable,
+
+00:10:25.714 --> 00:10:27.495
+easier to derive, faster.
+
+00:10:30.459 --> 00:10:34.119
+To give it better fidelity and to
+apply it to more complicated models,
+
+00:10:34.119 --> 00:10:35.183
+and applications.
+
+00:10:35.183 --> 00:10:38.304
+And modern variational inference,
+which is what we'll teach you
+
+00:10:38.304 --> 00:10:41.771
+about this morning touches on many
+important areas in machine learning.
+
+00:10:41.771 --> 00:10:44.505
+Things like probabilistic
+programming, reinforcement learning,
+
+00:10:44.505 --> 00:10:46.920
+neural nets, convex optimization,
+Bayesian statistics.
+
+00:10:46.920 --> 00:10:48.398
+And of course, many applications.
+
+00:10:48.398 --> 00:10:52.218
+And so, that's our goal today is
+to teach you about the basics.
+
+00:10:52.218 --> 00:10:54.422
+To tell you about some
+of these newer ideas.
+
+00:10:54.422 --> 00:10:58.025
+To try to situate them in context
+relative to each other and
+
+00:10:58.025 --> 00:11:00.452
+to suggest open areas
+of new research,
+
+00:11:00.452 --> 00:11:05.016
+although I'll tell you that I
+don't believe we made that slide.
+
+00:11:05.016 --> 00:11:09.780
+So, here is the next three
+parts of the tutorial.
+
+00:11:09.780 --> 00:11:13.879
+In part two, the next part, I'll
+give you the basics of variational
+
+00:11:13.879 --> 00:11:18.406
+inference, particularly around what
+are called conditionally conjugate
+
+00:11:18.406 --> 00:11:22.435
+models and talk a little bit about
+how to make variational inference
+
+00:11:22.435 --> 00:11:26.679
+scalable with stochastic variation
+inference, then Rajash will talk
+
+00:11:26.679 --> 00:11:30.872
+about stochastic gradients of
+the variational objective function.
+
+00:11:30.872 --> 00:11:35.745
+Which via Monte Carlo, which help
+us expand variations inference
+
+00:11:35.745 --> 00:11:40.443
+to too many more types of models
+than we could in the late 90s and
+
+00:11:40.443 --> 00:11:41.760
+early 2000.
+
+00:11:41.760 --> 00:11:46.192
+And then finally, Shakir will talk
+about beyond the mean fields.
+
+00:11:46.192 --> 00:11:49.913
+I know I haven't defined mean field
+yet, but beyond the main field where
+
+00:11:49.913 --> 00:11:52.902
+we can take those same stochastic
+gradient and they enable
+
+00:11:52.902 --> 00:11:56.760
+us to think about very complicated
+and expressive variational families.
+
+00:11:58.530 --> 00:12:01.410
+And so, this is what I just said
+is the summary of this tutorial.
+
+00:12:02.470 --> 00:12:04.040
+Here's the picture of
+variational inference.
+
+00:12:04.040 --> 00:12:07.952
+Variational inference is about
+approximating difficult quantities
+
+00:12:07.952 --> 00:12:11.400
+from complex models turning
+inference into optimization and
+
+00:12:11.400 --> 00:12:15.376
+the running theme of this tutorial
+is that variational inference, and
+
+00:12:15.376 --> 00:12:18.376
+stocastic optimization
+are powerful combination.
+
+00:12:18.376 --> 00:12:19.996
+With stocastic optimization,
+
+00:12:19.996 --> 00:12:22.940
+we can scale variational
+inference to massive datasets.
+
+00:12:22.940 --> 00:12:26.376
+We can enable variational inference
+on a wide class of difficult
+
+00:12:26.376 --> 00:12:26.949
+models and
+
+00:12:26.949 --> 00:12:30.768
+we can enable variational different
+inference with an elaborate, and
+
+00:12:30.768 --> 00:12:34.350
+flexible families of approximations
+for those q distributions.
+
+00:12:34.350 --> 00:12:36.510
+This is the summary.
+
+00:12:39.692 --> 00:12:42.604
+So with that, let's begin and
+talk about the simple ideas,
+
+00:12:42.604 --> 00:12:46.389
+mean-field variational inference and
+stochastic variational inference.
+
+00:12:48.440 --> 00:12:51.528
+It's useful to have a model that
+we're talking about concretely when
+
+00:12:51.528 --> 00:12:52.638
+discussing these idea.
+
+00:12:52.638 --> 00:12:54.660
+The motivation here is
+gonna be topic modelling.
+
+00:12:54.660 --> 00:12:58.858
+Topic modelling are models that use
+posterior inference to discover
+
+00:12:58.858 --> 00:13:00.666
+the hidden structure in big,
+
+00:13:00.666 --> 00:13:03.285
+unstructured collections
+of documents.
+
+00:13:03.285 --> 00:13:07.281
+Unsupervised learning method and
+one of the earlier examples of
+
+00:13:07.281 --> 00:13:10.470
+variational inference
+applied to a real problem.
+
+00:13:11.670 --> 00:13:15.355
+And so, the example model that
+we'll look at is latent Dirichlet
+
+00:13:15.355 --> 00:13:18.040
+allocation or LDA and
+I'll go over it quickly.
+
+00:13:18.040 --> 00:13:21.706
+LDA, this is a document model
+works based on the intuition that
+
+00:13:21.706 --> 00:13:23.930
+documents exhibit multiple topics.
+
+00:13:23.930 --> 00:13:27.253
+Here is an article about determining
+the number of genes that
+
+00:13:27.253 --> 00:13:30.251
+an organism needs to survive
+from science magazine and
+
+00:13:30.251 --> 00:13:33.850
+I've highlighted different words
+here with different colors.
+
+00:13:33.850 --> 00:13:37.360
+Words like computer analysis,
+predictions computational blue.
+
+00:13:37.360 --> 00:13:39.710
+Words like genes and
+genomes are yellow.
+
+00:13:39.710 --> 00:13:43.150
+Words like organisms and
+life, and survivor are pink.
+
+00:13:43.150 --> 00:13:44.178
+These are all different topics.
+
+00:13:44.178 --> 00:13:47.409
+This article could be seen as
+combining data analysis and
+
+00:13:47.409 --> 00:13:51.450
+genetics and evolutionary biology
+and the intuition behind LDA is that
+
+00:13:51.450 --> 00:13:54.478
+if I bother to highlight every
+word in this article and
+
+00:13:54.478 --> 00:13:59.260
+you squinted at it, you'd say,
+this combines those topics.
+
+00:13:59.260 --> 00:14:01.774
+What we wanna do is we wanna build
+that into a probability model.
+
+00:14:01.774 --> 00:14:06.764
+So here is the probability model,
+latent Dirichlet allocation which as
+
+00:14:06.764 --> 00:14:09.970
+a generative process
+assumes the following.
+
+00:14:09.970 --> 00:14:12.410
+First, each topic is
+a distribution over words.
+
+00:14:12.410 --> 00:14:15.874
+So, this is gonna be like a mixture
+model where the mixture components
+
+00:14:15.874 --> 00:14:17.470
+are distributions over words.
+
+00:14:17.470 --> 00:14:21.356
+Words like gene and DNA have high
+probability in this one, and so on,
+
+00:14:21.356 --> 00:14:25.108
+and then each document is generated
+by this model by first choosing
+
+00:14:25.108 --> 00:14:27.610
+a distribution over those topics.
+
+00:14:27.610 --> 00:14:30.298
+Then for each word,
+choosing a colored button from that
+
+00:14:30.298 --> 00:14:33.044
+distribution over topics and
+then choosing the word from
+
+00:14:33.044 --> 00:14:36.600
+the corresponding distribution over
+terms, the corresponding topic.
+
+00:14:36.600 --> 00:14:39.565
+So, this is what's called a mixed
+membership model in statistics.
+
+00:14:39.565 --> 00:14:41.823
+It's an example of
+a Bayesian model for
+
+00:14:41.823 --> 00:14:45.177
+which we cannot compute that
+normalizing constant and you
+
+00:14:45.177 --> 00:14:49.225
+can see it as a mixture model where
+each document comes from a mixture.
+
+00:14:49.225 --> 00:14:52.271
+The mixture components
+are shared across documents, but
+
+00:14:52.271 --> 00:14:55.205
+the mixture proportions
+are unique for each document.
+
+00:14:55.205 --> 00:14:56.215
+They're drawn fresh for
+each document.
+
+00:14:56.215 --> 00:14:59.308
+I turn the page of science and
+I generate an article now about data
+
+00:14:59.308 --> 00:15:02.140
+analysis in neuroscience,
+for instance.
+
+00:15:02.140 --> 00:15:02.786
+So, this is LDA.
+
+00:15:02.786 --> 00:15:05.170
+But more generally,
+this is mixed membership modelling.
+
+00:15:05.170 --> 00:15:07.302
+It's an example of
+a class of models for
+
+00:15:07.302 --> 00:15:10.090
+which it's difficult to
+do posterior inference.
+
+00:15:10.090 --> 00:15:11.930
+Now, what is posterior inference?
+
+00:15:11.930 --> 00:15:14.755
+Of course, we don't get of observe
+all that structure that I described
+
+00:15:14.755 --> 00:15:16.084
+for you in explaining the model.
+
+00:15:16.084 --> 00:15:18.210
+Really, we just get to
+observe the documents.
+
+00:15:18.210 --> 00:15:21.770
+And so, we wanna fill in all
+those hidden random variables.
+
+00:15:21.770 --> 00:15:23.812
+And so, that is a posterior
+distribution here.
+
+00:15:23.812 --> 00:15:25.182
+The probability of topics,
+
+00:15:25.182 --> 00:15:27.700
+proportions and
+assignments given the documents.
+
+00:15:29.270 --> 00:15:33.115
+That's an example of when we're
+doing posterior inference and
+
+00:15:33.115 --> 00:15:35.118
+notice we'll get to this later.
+
+00:15:35.118 --> 00:15:37.683
+We wanna do this with
+millions of documents and
+
+00:15:37.683 --> 00:15:39.470
+billions of latent variables.
+
+00:15:39.470 --> 00:15:40.901
+If there's a latent variable for
+every word,
+
+00:15:40.901 --> 00:15:42.120
+we have billions of
+latent variables.
+
+00:15:44.730 --> 00:15:47.320
+So in the modelling process,
+
+00:15:47.320 --> 00:15:51.570
+we wanna represent our
+models as graphical models.
+
+00:15:51.570 --> 00:15:54.661
+These encode assumptions about
+the data by factorizing the joint
+
+00:15:54.661 --> 00:15:57.202
+distribution of the hidden and
+observed variables.
+
+00:15:57.202 --> 00:16:01.216
+It connects to both assumptions that
+we're making through the model and
+
+00:16:01.216 --> 00:16:04.440
+algorithms for computing with
+data using this model, and
+
+00:16:04.440 --> 00:16:07.340
+it defines the posterior
+through the joint.
+
+00:16:07.340 --> 00:16:09.360
+So, here's the graphical model for
+LDA.
+
+00:16:09.360 --> 00:16:11.970
+Remember, nodes
+are random variables.
+
+00:16:11.970 --> 00:16:14.486
+Edges denote dependence
+between random variables.
+
+00:16:14.486 --> 00:16:17.490
+Shaded nodes are observed,
+unshaded nodes are hidden.
+
+00:16:17.490 --> 00:16:21.074
+And so you can think of this as a
+picture of the posterior, cuz I have
+
+00:16:21.074 --> 00:16:24.722
+observed the words of each document
+and everything else is hidden.
+
+00:16:24.722 --> 00:16:26.366
+So in this picture, the topics,
+
+00:16:26.366 --> 00:16:29.510
+those distributions over
+terms are denoted by data.
+
+00:16:29.510 --> 00:16:32.558
+So, it's K of them.
+These rectangles are plates and
+
+00:16:32.558 --> 00:16:36.126
+denote replications,
+so we have K topics.
+
+00:16:36.126 --> 00:16:39.184
+And then for each document,
+I choose a distribution over topic.
+
+00:16:39.184 --> 00:16:40.218
+That's theta.
+
+00:16:40.218 --> 00:16:43.380
+And then for each word in each
+document, I choose a colored button.
+
+00:16:43.380 --> 00:16:46.542
+That's Z and then I choose the word
+from the corresponding topic.
+
+00:16:46.542 --> 00:16:49.388
+So, this picture tells us what
+the factorization is of a joint
+
+00:16:49.388 --> 00:16:51.480
+distribution and
+connects the algorithms.
+
+00:16:53.190 --> 00:16:58.636
+Again, here's the posterior now for
+this specific model and you can see,
+
+00:16:58.636 --> 00:17:03.492
+it is the joint divided by the
+marginal distribution of the words.
+
+00:17:03.492 --> 00:17:08.156
+And again, we cannot compute
+that denominator, so
+
+00:17:08.156 --> 00:17:11.552
+we appeal to approximate inference.
+
+00:17:14.390 --> 00:17:16.690
+I didn't know why
+that slide was there.
+
+00:17:16.690 --> 00:17:19.733
+Here's an example of doing inference
+with that model on a large dataset
+
+00:17:19.733 --> 00:17:22.080
+with the kind of algorithms
+I'm gonna tell you about.
+
+00:17:22.080 --> 00:17:26.188
+So with this model, we feed in two
+million New York Times articles or
+
+00:17:26.188 --> 00:17:28.460
+1.8 New York Times articles.
+
+00:17:28.460 --> 00:17:31.632
+We look at the posterior
+distribution of those distributions
+
+00:17:31.632 --> 00:17:34.930
+over terms and we see words that
+go together in coherent topics.
+
+00:17:34.930 --> 00:17:38.221
+Words like children's school,
+family, parents, stock percent,
+
+00:17:38.221 --> 00:17:39.680
+companies, market and so on.
+
+00:17:41.630 --> 00:17:43.798
+So, how did we get there?
+
+00:17:43.798 --> 00:17:47.638
+How did we get from that assumption,
+that model, the posterior that we
+
+00:17:47.638 --> 00:17:50.390
+couldn't compute to
+an algorithm that computed or
+
+00:17:50.390 --> 00:17:53.230
+approximated the posterior
+that we cared about?
+
+00:17:53.230 --> 00:17:54.088
+How did we get there?
+
+00:17:54.088 --> 00:17:57.533
+Well, in the next three sections
+of the talk, I'm gonna first
+
+00:17:57.533 --> 00:18:01.720
+define a generic class of models
+that, that model is an instance of.
+
+00:18:01.720 --> 00:18:04.740
+Derive the classical mean field
+variational inference algorithm for
+
+00:18:04.740 --> 00:18:08.320
+that generic class and then derive
+the stochastic variational inference
+
+00:18:08.320 --> 00:18:11.390
+which let us scale that
+algorithm to large datasets,
+
+00:18:11.390 --> 00:18:14.210
+but keeping in mind LDA
+is our running example.
+
+00:18:16.170 --> 00:18:21.180
+So, here is a generic
+class of models.
+
+00:18:21.180 --> 00:18:24.300
+So we have observations x,
+x1 though n.
+
+00:18:24.300 --> 00:18:26.088
+We have what are called
+local variable z.
+
+00:18:26.088 --> 00:18:30.614
+There is a z for every x and
+we have a global variables beta.
+
+00:18:30.614 --> 00:18:35.047
+The difference between local and
+global variables is that the i theta
+
+00:18:35.047 --> 00:18:39.403
+point x only depends on its local
+variable z and the global variables
+
+00:18:39.403 --> 00:18:43.760
+beta, and those criteria are denoted
+in this graphical model, and
+
+00:18:43.760 --> 00:18:47.370
+in the corresponding
+factorized joint distribution.
+
+00:18:49.330 --> 00:18:52.385
+Our goal, of course is to
+compute the posterior,
+
+00:18:52.385 --> 00:18:54.870
+the probability of beta and
+z, given x.
+
+00:18:57.180 --> 00:18:58.559
+So, let's define a few more terms.
+
+00:19:00.460 --> 00:19:02.270
+First, the complete conditional.
+
+00:19:02.270 --> 00:19:03.594
+What is the complete conditional?
+
+00:19:03.594 --> 00:19:07.674
+The complete conditional is
+the conditional distribution of
+
+00:19:07.674 --> 00:19:11.753
+a latent variable, given all of
+the other latent variable and
+
+00:19:11.753 --> 00:19:13.700
+all of the observations.
+
+00:19:13.700 --> 00:19:16.353
+So if you know the Gibbs sampler,
+you know that the complete
+
+00:19:16.353 --> 00:19:19.450
+conditional is what you sample from
+when you define a Gibbs sampler.
+
+00:19:19.450 --> 00:19:23.239
+Now, we're gonna assume in this
+class of models that each complete
+
+00:19:23.239 --> 00:19:26.030
+conditional is in
+an exponential family.
+
+00:19:26.030 --> 00:19:29.724
+So here what I've done is I've put
+those complete conditionals in their
+
+00:19:29.724 --> 00:19:31.540
+typical exponential family form,
+
+00:19:31.540 --> 00:19:33.790
+in their natural
+exponential family form.
+
+00:19:33.790 --> 00:19:36.508
+I'm sorry, I wanna go over there,
+
+00:19:36.508 --> 00:19:40.040
+but I just somehow
+needs to be over here.
+
+00:19:40.040 --> 00:19:42.770
+And so here, for
+example is the complete conditional.
+
+00:19:42.770 --> 00:19:44.560
+We'll start with
+the global variables.
+
+00:19:44.560 --> 00:19:46.444
+The complete conditional of beta,
+
+00:19:46.444 --> 00:19:49.849
+given all of the local latent
+variables z and the observations.
+
+00:19:49.849 --> 00:19:53.207
+That's in some exponential family
+where notice that the natural
+
+00:19:53.207 --> 00:19:55.955
+parameter of that exponential
+family is a function of
+
+00:19:55.955 --> 00:19:57.922
+whatever it is I'm conditioning on.
+
+00:19:57.922 --> 00:19:58.492
+That makes sense.
+
+00:19:58.492 --> 00:19:59.997
+It's a conditional distribution,
+
+00:19:59.997 --> 00:20:02.769
+so the natural parameter of function
+of what I'm conditioning on.
+
+00:20:02.769 --> 00:20:05.689
+And we're being general here, so
+this can be any exponential family,
+
+00:20:05.689 --> 00:20:08.770
+a gamma, multinomial, categorical,
+Gaussian, whatever it might be.
+
+00:20:09.990 --> 00:20:13.045
+The complete conditional of
+the local variable, first of all,
+
+00:20:13.045 --> 00:20:17.990
+notice it only depends on the global
+variable and its data point.
+
+00:20:17.990 --> 00:20:20.840
+And that's a function of
+the independence assumptions that
+
+00:20:20.840 --> 00:20:22.480
+this model naturally makes.
+
+00:20:22.480 --> 00:20:24.720
+And it too is an exponential family.
+
+00:20:24.720 --> 00:20:25.910
+An arbitrary exponential family.
+
+00:20:27.270 --> 00:20:30.150
+So this is a restriction we're
+placing on this class of models.
+
+00:20:32.160 --> 00:20:36.990
+Now when we assume that, we can
+say something about the global
+
+00:20:36.990 --> 00:20:39.660
+parameter or
+the global random variable.
+
+00:20:39.660 --> 00:20:43.000
+From the theory around conjugacy,
+here we're citing the Bernardo and
+
+00:20:43.000 --> 00:20:48.960
+Smith Bayesian Theory book, but
+this is a from the 70's I think.
+
+00:20:48.960 --> 00:20:53.110
+From congegacy, we know that that
+natural parameter of the complete
+
+00:20:53.110 --> 00:20:56.010
+conditional of the global
+variable has a particular form.
+
+00:20:56.010 --> 00:20:59.210
+And it's the hyper parameter plus
+the sum of sufficient statistics
+
+00:20:59.210 --> 00:21:01.140
+applied to each data point and
+local variable.
+
+00:21:02.690 --> 00:21:05.683
+And so, we're gonna come back to
+this form later of the natural
+
+00:21:05.683 --> 00:21:08.090
+parameter of the complete
+conditional.
+
+00:21:08.090 --> 00:21:09.400
+Of the global variable.
+
+00:21:10.998 --> 00:21:15.564
+So we just defined a class of models
+where we have this graphical model,
+
+00:21:15.564 --> 00:21:19.218
+where we've asserted that
+each complete conditional in
+
+00:21:19.218 --> 00:21:21.100
+an exponential family.
+
+00:21:21.100 --> 00:21:24.860
+And that class of models actually
+describes most of the models that
+
+00:21:24.860 --> 00:21:26.480
+you might have read about,
+in the 90s and
+
+00:21:26.480 --> 00:21:29.360
+2000s in the machine
+learning literature.
+
+00:21:29.360 --> 00:21:32.640
+So Bayesian mixture models, time
+series models, factorial models,
+
+00:21:32.640 --> 00:21:35.980
+matrix factorization models,
+mixed membership models like LDA,
+
+00:21:35.980 --> 00:21:38.970
+a variety of models all
+fall into that category.
+
+00:21:38.970 --> 00:21:43.910
+You can take any of those models and
+funnel them into this framework.
+
+00:21:45.972 --> 00:21:48.206
+So, what we're gonna do is
+variational inference on that
+
+00:21:48.206 --> 00:21:49.370
+large class.
+
+00:21:49.370 --> 00:21:51.620
+Again, here is the picture
+of variational inference.
+
+00:21:51.620 --> 00:21:55.170
+Define a q, optimize the parameter
+to that q to make it
+
+00:21:55.170 --> 00:21:58.020
+close in KL divergence to
+the posterior that we care about.
+
+00:22:01.742 --> 00:22:03.790
+This is an important slide.
+
+00:22:03.790 --> 00:22:07.160
+So that KL divergence
+is intractable.
+
+00:22:07.160 --> 00:22:09.330
+We actually can't compute
+the KL divergence.
+
+00:22:09.330 --> 00:22:12.120
+Somebody asked me about this
+in line for lanyard actually.
+
+00:22:12.120 --> 00:22:13.160
+They said, hey,
+
+00:22:13.160 --> 00:22:17.060
+how did the variational inference,
+you can't compute the KL divergence
+
+00:22:17.060 --> 00:22:20.390
+because it requires knowing
+the posterior itself.
+
+00:22:20.390 --> 00:22:23.970
+Which is not the typical
+lanyard line conversation.
+
+00:22:23.970 --> 00:22:28.710
+And this is the answer to that
+question, if you're here Vincent.
+
+00:22:28.710 --> 00:22:30.020
+Then this is the answer.
+
+00:22:31.676 --> 00:22:34.160
+What we do is we work with
+what's called the ELBO.
+
+00:22:34.160 --> 00:22:36.500
+It's called the evidence
+lower bound.
+
+00:22:36.500 --> 00:22:40.646
+And it's a lower bound on log p(x)
+on the problematic denominator of
+
+00:22:40.646 --> 00:22:41.637
+the posterior.
+
+00:22:41.637 --> 00:22:42.669
+More importantly,
+
+00:22:42.669 --> 00:22:46.133
+maximizing the ELBO is equivalent
+to minimizing the KL diversion.
+
+00:22:46.133 --> 00:22:48.310
+Kind of easy to see.
+
+00:22:49.790 --> 00:22:52.750
+And so
+this is our objective function for
+
+00:22:52.750 --> 00:22:55.400
+this whole talk, the ELBO.
+
+00:22:55.400 --> 00:22:58.340
+Now you can see that
+the ELBO has two terms.
+
+00:22:58.340 --> 00:23:01.580
+The first term, so it's a function
+of the variational parameters.
+
+00:23:01.580 --> 00:23:02.270
+That makes sense, cuz
+
+00:23:02.270 --> 00:23:05.030
+we're going to optimize with respect
+to the variational parameters.
+
+00:23:05.030 --> 00:23:06.220
+And it has two terms.
+
+00:23:06.220 --> 00:23:10.109
+The first term is the expectation
+of the log joint.
+
+00:23:11.790 --> 00:23:15.450
+So now if you just in your mind
+imagined the log joint use the chain
+
+00:23:15.450 --> 00:23:18.270
+rule, divide it up in log prior
+plus log of the likelihood.
+
+00:23:18.270 --> 00:23:21.180
+You could see that if I
+only had that term and
+
+00:23:21.180 --> 00:23:24.590
+I was optimizing with respect to q,
+I would want q to place
+
+00:23:24.590 --> 00:23:28.420
+all of its mass on the MAP
+estimate of the latent variables.
+
+00:23:28.420 --> 00:23:29.250
+That's for the first term.
+
+00:23:30.390 --> 00:23:35.120
+The second term of course
+is the entropy of q,
+
+00:23:35.120 --> 00:23:36.600
+minus expectation log q.
+
+00:23:36.600 --> 00:23:38.130
+That's the entropy of q.
+
+00:23:38.130 --> 00:23:40.670
+So while the first
+remember wants me,
+
+00:23:40.670 --> 00:23:44.550
+I'm q to all my mass on the map
+estimate of the latent variables,
+
+00:23:44.550 --> 00:23:49.010
+the second term says I actually
+also want q to be diffuse.
+
+00:23:49.010 --> 00:23:50.850
+And so these terms trade off and,
+
+00:23:50.850 --> 00:23:54.100
+in the sense that the second
+term is regularizing the first.
+
+00:23:55.161 --> 00:23:58.960
+One caveat, the ELBO is not convex.
+
+00:23:58.960 --> 00:24:01.830
+So it's true,
+our goal is to optimize this, but
+
+00:24:01.830 --> 00:24:04.030
+it's also true that this
+is not a convex function.
+
+00:24:04.030 --> 00:24:06.745
+So, we're gonna find a local
+optimum of the ELBO.
+
+00:24:09.504 --> 00:24:12.500
+So that's our goal,
+to optimize the ELBO.
+
+00:24:12.500 --> 00:24:14.679
+We still need to, wow, okay.
+
+00:24:14.679 --> 00:24:19.255
+We still need to
+specify the form of q.
+
+00:24:19.255 --> 00:24:22.654
+We still need to specify
+what is this q of z, and
+
+00:24:22.654 --> 00:24:25.365
+beta, that we're gonna optimize.
+
+00:24:25.365 --> 00:24:27.012
+And that's where another
+important idea comes in,
+
+00:24:27.012 --> 00:24:27.840
+the mean-field family.
+
+00:24:27.840 --> 00:24:30.560
+Well, you've probably heard of
+mean-field variational inference,
+
+00:24:30.560 --> 00:24:32.976
+it's about the family that we're
+optimizing with respect to.
+
+00:24:32.976 --> 00:24:37.004
+So the mean-field family says,
+that all the latent variables
+
+00:24:37.004 --> 00:24:41.892
+are independent and governed by
+their own variational parameter.
+
+00:24:41.892 --> 00:24:46.310
+So here I have q of beta and z.
+
+00:24:46.310 --> 00:24:48.260
+Has variational parameters,
+lambda and
+
+00:24:48.260 --> 00:24:52.840
+phi, where we have q of
+beta governed by lambda and
+
+00:24:52.840 --> 00:24:55.920
+then independently,
+q of z is governed by its own phi.
+
+00:24:55.920 --> 00:24:58.400
+So I might have 10
+million latent variables.
+
+00:24:58.400 --> 00:25:01.230
+Each one has its own variational
+parameter and I'm tweaking all of
+
+00:25:01.230 --> 00:25:04.400
+those parameters, to make the
+corresponding distribution close to
+
+00:25:04.400 --> 00:25:05.349
+the exact posterior.
+
+00:25:06.510 --> 00:25:10.186
+Furthermore, to fully specify that
+family, each factor is gonna be in
+
+00:25:10.186 --> 00:25:12.957
+the same family as the models
+complete conditional.
+
+00:25:12.957 --> 00:25:16.375
+So, if p of beta given z and x as
+a gamma, then Q of beta is gonna be
+
+00:25:16.375 --> 00:25:19.365
+a gamma with a phi parameter
+lambda that I can control.
+
+00:25:19.365 --> 00:25:23.228
+When I show this to statisticians
+they think it's crazy, because it's
+
+00:25:23.228 --> 00:25:26.789
+a bunch of disconnected variables
+each with their own parameter.
+
+00:25:28.130 --> 00:25:30.730
+And there's no data in there so
+how are we estimating it?
+
+00:25:30.730 --> 00:25:34.966
+The idea is that through the ELBO,
+through this optimization function,
+
+00:25:34.966 --> 00:25:38.862
+through the convergence,
+we are connecting this family to
+
+00:25:38.862 --> 00:25:41.550
+the data and
+the posterior that we care about.
+
+00:25:41.550 --> 00:25:43.330
+So that's how it all works,
+that's the full setup.
+
+00:25:44.922 --> 00:25:46.700
+We then optimize the ELBO.
+
+00:25:46.700 --> 00:25:49.570
+The ELBO defined in terms of
+these variational parameters.
+
+00:25:49.570 --> 00:25:54.430
+And the nice result of Geramani and
+Beal from 2001 is that,
+
+00:25:54.430 --> 00:25:59.030
+if we iteratively optimize each
+parameter in turn holding the other
+
+00:25:59.030 --> 00:26:03.910
+parameters fixed, then they have
+this nice coordinate update.
+
+00:26:03.910 --> 00:26:07.170
+Lambda is the expectation
+of eta of Z and x.
+
+00:26:07.170 --> 00:26:10.695
+And phi is the expectation
+of eta of beta and x.
+
+00:26:10.695 --> 00:26:16.360
+And the mean field assumption
+ensures, that the right
+
+00:26:16.360 --> 00:26:19.780
+hand side of each update is
+independent of the left hand side.
+
+00:26:19.780 --> 00:26:23.050
+And so this is how varitional
+inference in the 90s
+
+00:26:23.050 --> 00:26:23.700
+and 2000s worked.
+
+00:26:23.700 --> 00:26:26.870
+We set up variational parameters,
+and then we marched down those
+
+00:26:26.870 --> 00:26:29.319
+variational parameters,
+iteratively updating each one.
+
+00:26:32.130 --> 00:26:35.290
+That gets us to a local
+optimum of the ELBO.
+
+00:26:35.290 --> 00:26:37.250
+And notice the relationship
+to Gibb sampling.
+
+00:26:37.250 --> 00:26:40.350
+In Gibb sampling we iteratively
+sample from these distributions.
+
+00:26:40.350 --> 00:26:44.440
+In variational inference,
+we set these parameters equal to
+
+00:26:44.440 --> 00:26:47.750
+the expectation of their
+natural parameters.
+
+00:26:47.750 --> 00:26:48.250
+Now.
+
+00:26:49.819 --> 00:26:52.446
+Let's go back to LDA very quickly,
+
+00:26:52.446 --> 00:26:56.770
+cuz I'm trying to be
+sensitive about the time of.
+
+00:26:56.770 --> 00:26:59.820
+So in LDA, mean field family
+says everything's independent.
+
+00:26:59.820 --> 00:27:02.740
+The topic proportions,
+all the topic assignments.
+
+00:27:02.740 --> 00:27:05.460
+And from that, we can run coordinate
+descent variational inference.
+
+00:27:05.460 --> 00:27:07.831
+Take our article,
+look at its topic proportions.
+
+00:27:07.831 --> 00:27:09.462
+So that's an example of
+what we would do with
+
+00:27:09.462 --> 00:27:10.750
+a fitted variational parameter.
+
+00:27:10.750 --> 00:27:15.830
+We would take it and then look at
+it, just to explore the corpus.
+
+00:27:15.830 --> 00:27:16.780
+And then, we can look at,
+
+00:27:16.780 --> 00:27:20.550
+we can see this article exhibits
+only a handful of topics.
+
+00:27:20.550 --> 00:27:23.220
+We can look at the most frequent
+words from the most frequent topics.
+
+00:27:23.220 --> 00:27:26.470
+And we see that they, again
+through the variational parameters
+
+00:27:26.470 --> 00:27:27.790
+give us something interpretable.
+
+00:27:29.544 --> 00:27:32.310
+And so this is classical
+variational inference.
+
+00:27:32.310 --> 00:27:33.360
+In a nutshell.
+
+00:27:33.360 --> 00:27:37.880
+We start with our data and
+a model, and we repeatedly update
+
+00:27:37.880 --> 00:27:41.525
+each variational parameter using
+these coordinate ascent updates,
+
+00:27:41.525 --> 00:27:43.424
+until the ELBO has converged.
+
+00:27:45.710 --> 00:27:49.130
+Again, that recipe gives you
+variational inference for
+
+00:27:49.130 --> 00:27:51.350
+a huge class of models, or
+for a large class of models.
+
+00:27:51.350 --> 00:27:53.639
+For a huge class of models,
+Rajes will talk about it.
+
+00:27:55.311 --> 00:27:57.110
+There's a problem though.
+
+00:27:57.110 --> 00:27:59.375
+Classical variational
+inference's inefficient.
+
+00:27:59.375 --> 00:28:01.600
+L let's take LBA as an example.
+
+00:28:01.600 --> 00:28:04.620
+We start out with random topics,
+garbage topics, that have no
+
+00:28:04.620 --> 00:28:08.840
+meaning, and then we pain stakingly
+analyze every article according to
+
+00:28:08.840 --> 00:28:11.740
+those topics cuz we have to,
+that's what the recipe dictates.
+
+00:28:11.740 --> 00:28:14.890
+We have to march through all of our
+latent variables and we have laying
+
+00:28:14.890 --> 00:28:18.900
+variables for every document, before
+we can update the topics again.
+
+00:28:18.900 --> 00:28:20.610
+This can't handle massive data and
+
+00:28:20.610 --> 00:28:22.500
+that's where stochastic
+variational comes in.
+
+00:28:22.500 --> 00:28:24.370
+Stochastic variational inference,
+
+00:28:24.370 --> 00:28:26.960
+scales variational inference
+up to massive data, and
+
+00:28:26.960 --> 00:28:30.840
+only uses the mathematics that we
+had in this first part of the talk.
+
+00:28:32.490 --> 00:28:35.080
+This is the cartoon of stochastic
+variational inference.
+
+00:28:35.080 --> 00:28:39.270
+Where instead of marching through
+the whole data set before updating
+
+00:28:39.270 --> 00:28:44.020
+my topics, I iterively sub-sample
+a small piece of the data,
+
+00:28:44.020 --> 00:28:46.100
+infer its local hidden structure,
+
+00:28:46.100 --> 00:28:49.170
+update an idea of the global
+hidden structure and repeat.
+
+00:28:49.170 --> 00:28:50.830
+And going through this over and
+over again,
+
+00:28:50.830 --> 00:28:53.715
+give us very fast
+convergences of the ELBO.
+
+00:28:56.260 --> 00:28:59.750
+So here's another important
+idea from this tutorial.
+
+00:28:59.750 --> 00:29:01.030
+Stochastic optimization.
+
+00:29:02.410 --> 00:29:04.950
+And that's the key idea, that turns
+
+00:29:04.950 --> 00:29:08.300
+classical variational inference into
+stochastic variational inference.
+
+00:29:08.300 --> 00:29:13.479
+So stochastic optimization,
+this guy, his name is Herb Robins He
+
+00:29:13.479 --> 00:29:19.401
+invented stochastic optimization,
+also empirical base, also bandits.
+
+00:29:19.401 --> 00:29:20.442
+And he did this in the 60s.
+
+00:29:20.442 --> 00:29:24.185
+So whatever he smoked,
+you wanna smoke it too.
+
+00:29:24.185 --> 00:29:27.090
+>> [LAUGH]
+>> What's
+
+00:29:27.090 --> 00:29:28.780
+the idea behind
+stochastic optimization?
+
+00:29:28.780 --> 00:29:32.740
+This is Robbins and Munro, 1951.
+
+00:29:32.740 --> 00:29:35.790
+The idea's that we replace
+the gradient in an optimization,
+
+00:29:35.790 --> 00:29:38.480
+with a cheaper noisy
+estimate of that gradient.
+
+00:29:38.480 --> 00:29:41.010
+This is guaranteed to
+converge to a local optimum,
+
+00:29:41.010 --> 00:29:43.500
+in a objective like the ELBO.
+
+00:29:43.500 --> 00:29:47.070
+And this single idea really has
+enabled modern machine learning.
+
+00:29:47.070 --> 00:29:50.399
+Why are we speaking to however
+many hundred of people of that
+
+00:29:50.399 --> 00:29:50.980
+variational inference?
+
+00:29:50.980 --> 00:29:53.340
+Because of stochastic optimization.
+
+00:29:53.340 --> 00:29:54.720
+I feel like we owe.
+
+00:29:54.720 --> 00:29:57.837
+Stochastic Optimization to
+the success of our field.
+
+00:29:57.837 --> 00:29:59.740
+And the idea is very simple.
+
+00:29:59.740 --> 00:30:04.506
+When I teach Stochastic
+Optimization, I tell the story that
+
+00:30:04.506 --> 00:30:09.000
+Tamara Wants to go from here,
+from Barcelona to Berlin.
+
+00:30:09.000 --> 00:30:09.970
+How far is Berlin?
+
+00:30:11.560 --> 00:30:12.290
+Anybody know?
+
+00:30:12.290 --> 00:30:15.140
+Okay, I'm gonna,
+let's say a thousand kilometers.
+
+00:30:15.140 --> 00:30:16.050
+I don't know how far it is.
+
+00:30:16.050 --> 00:30:20.000
+She wants to go to Berlin and
+everybody's drunk, okay?
+
+00:30:20.000 --> 00:30:21.440
+Here in Barcelona everybody's drunk,
+but
+
+00:30:21.440 --> 00:30:22.916
+really all over Europe
+everybody's drunk.
+
+00:30:22.916 --> 00:30:26.150
+All right so, Tamara wants to
+go to Berlin, everybody's drunk,
+
+00:30:26.150 --> 00:30:28.830
+remember I'm explaining
+stochastic optimization.
+
+00:30:29.860 --> 00:30:30.790
+What does she do?
+
+00:30:30.790 --> 00:30:35.120
+She asks Shakir, I want to go
+to Berlin and everybody's drunk,
+
+00:30:35.120 --> 00:30:37.570
+she says to Shakir,
+how do I get to Berlin?
+
+00:30:37.570 --> 00:30:41.020
+Shakir points in some random
+direction and Annie falls over.
+
+00:30:42.940 --> 00:30:46.160
+A normal person would
+ask somebody else,
+
+00:30:46.160 --> 00:30:49.230
+but not according to
+stochastic optimization.
+
+00:30:49.230 --> 00:30:52.960
+Tamara should walk 500 km in
+whatever direction Shakir pointed,
+
+00:30:52.960 --> 00:30:53.800
+all right?
+
+00:30:53.800 --> 00:30:55.590
+She's in the middle of
+Europe somewhere let's hope,
+
+00:30:55.590 --> 00:31:00.320
+not in the middle of the ocean,
+and everybody's still drunk, and
+
+00:31:00.320 --> 00:31:03.520
+she asks Thomas Hoffman,
+hey, how do I get to Berlin?
+
+00:31:03.520 --> 00:31:05.750
+He's German,
+she thinks maybe he'll know.
+
+00:31:05.750 --> 00:31:07.240
+But he's drunk too.
+
+00:31:07.240 --> 00:31:09.100
+And he points in some
+random direction.
+
+00:31:09.100 --> 00:31:11.520
+She walks 250 miles
+in that direction.
+
+00:31:11.520 --> 00:31:13.140
+She runs into Andrew Ing.
+
+00:31:13.140 --> 00:31:13.790
+He's drunk.
+
+00:31:13.790 --> 00:31:15.180
+She runs into all kinds of people.
+
+00:31:15.180 --> 00:31:15.780
+They're all drunk.
+
+00:31:15.780 --> 00:31:17.310
+They all point in some
+random direction.
+
+00:31:17.310 --> 00:31:21.090
+If she takes smaller and smaller
+step sizes on her way to Berlin,
+
+00:31:21.090 --> 00:31:22.760
+you can kind of imagine.
+
+00:31:22.760 --> 00:31:25.368
+And if we were to
+magically revive Shakir and
+
+00:31:25.368 --> 00:31:29.806
+ask him where Berlin is, he would,
+on average, point exactly at Berlin,
+
+00:31:29.806 --> 00:31:32.851
+then Tamara will eventually
+get to Berlin, okay?
+
+00:31:32.851 --> 00:31:34.480
+And it works just like that.
+
+00:31:34.480 --> 00:31:36.670
+That is Stochastic optimization.
+
+00:31:36.670 --> 00:31:41.820
+In mathematics, with noisy
+gradients, I just follow if
+
+00:31:41.820 --> 00:31:47.250
+that hatted gradient
+represents the noisy gradient.
+
+00:31:47.250 --> 00:31:51.060
+If I follow the noisy gradient
+with a decreasing step size,
+
+00:31:51.060 --> 00:31:55.060
+rho t is the step size,
+then I will get to an optimum.
+
+00:31:55.060 --> 00:31:58.990
+And this requires two things,
+it requires unbiased gradients,
+
+00:31:58.990 --> 00:32:01.510
+that the expectation
+of the noisy gradient,
+
+00:32:01.510 --> 00:32:03.970
+that there's a lot of expectations
+floating around here.
+
+00:32:03.970 --> 00:32:06.800
+That's an expectation with
+respect to this random gradient.
+
+00:32:06.800 --> 00:32:08.880
+That that expectation,
+if that is unbiased,
+
+00:32:08.880 --> 00:32:11.490
+meaning the expectation of the noisy
+gradient equals the true gradient,
+
+00:32:11.490 --> 00:32:14.980
+if I could revive Shakir he
+would point right at Berlin.
+
+00:32:14.980 --> 00:32:17.822
+We need that for
+this to work in 1951.
+
+00:32:17.822 --> 00:32:20.550
+And two, we need the step size
+sequence row T to follow what
+
+00:32:20.550 --> 00:32:22.630
+are called the Robbins–Monro
+condition.
+
+00:32:22.630 --> 00:32:28.070
+And those say that we need to
+be able to get to Berlin but
+
+00:32:28.070 --> 00:32:32.860
+we need to slow down at a rate such
+that we will eventually get there,
+
+00:32:32.860 --> 00:32:34.640
+even though we have noisy gradients.
+
+00:32:34.640 --> 00:32:38.245
+Now, lately in machine learning,
+we've played with those
+
+00:32:38.245 --> 00:32:42.610
+Robbins-Monro conditions, right,
+innovations like and play with that.
+
+00:32:42.610 --> 00:32:44.800
+But this is the idea
+in this old paper.
+
+00:32:45.940 --> 00:32:48.870
+Okay, and this is gonna be the key
+idea through out this talk, so
+
+00:32:48.870 --> 00:32:50.490
+cast the compromisation.
+
+00:32:50.490 --> 00:32:54.900
+Okay, so in this first setting of
+conditionally conjugate models,
+
+00:32:54.900 --> 00:32:57.365
+the natural gradient of
+the ELBO the natural gradients,
+
+00:32:57.365 --> 00:33:00.735
+this type of gradient
+looks like that.
+
+00:33:00.735 --> 00:33:04.155
+It's alpha plus the sum of these
+expected sufficient statistics
+
+00:33:04.155 --> 00:33:05.445
+minus lambda.
+
+00:33:05.445 --> 00:33:08.505
+And these expected sufficient
+statistics are taken with respect to
+
+00:33:08.505 --> 00:33:10.475
+the optimum local parameters.
+
+00:33:10.475 --> 00:33:13.445
+So therefore we can construct
+a noisy gradient by sampling
+
+00:33:13.445 --> 00:33:15.005
+a datapoint at random and
+
+00:33:15.005 --> 00:33:18.369
+then computing this scaled
+version of that natural gradient.
+
+00:33:19.430 --> 00:33:20.910
+All right,
+this is a good noisy gradient.
+
+00:33:20.910 --> 00:33:24.370
+Because you can probably see, its
+expectation is the exact gradient
+
+00:33:24.370 --> 00:33:26.540
+because I'm choosing a data
+point uniformly at random.
+
+00:33:26.540 --> 00:33:29.590
+By the way, this is a vanilla
+application of stochastic
+
+00:33:29.590 --> 00:33:30.880
+optimization here.
+
+00:33:30.880 --> 00:33:33.670
+Its expectation is the exact
+gradient, it's unbiased.
+
+00:33:33.670 --> 00:33:37.410
+And it's cheap, it only depends
+on the optimized parameters of
+
+00:33:37.410 --> 00:33:38.670
+one of the data points, okay?
+
+00:33:38.670 --> 00:33:41.430
+So rather than marching through all
+of the documents to get this noisy
+
+00:33:41.430 --> 00:33:43.940
+gradient, I just plot one document,
+and
+
+00:33:43.940 --> 00:33:48.310
+I find how it exhibits the local
+structure, and then proceed.
+
+00:33:49.670 --> 00:33:52.020
+Okay, and that gives us
+stochastic variational inference,
+
+00:33:53.300 --> 00:33:54.160
+which looks like this.
+
+00:33:54.160 --> 00:33:57.960
+I'm getting signs that I'm
+running out of time, so
+
+00:33:57.960 --> 00:34:00.030
+I'm gonna skip this slide.
+
+00:34:00.030 --> 00:34:02.820
+But more importantly,
+it looks like this. Right?
+
+00:34:02.820 --> 00:34:04.780
+I subsample them from my data.
+
+00:34:04.780 --> 00:34:05.870
+I Infer its local structure.
+
+00:34:05.870 --> 00:34:10.250
+In other words, I optimize its
+local variational parameter.
+
+00:34:10.250 --> 00:34:13.760
+I then update the global structure
+by updating this natural,
+
+00:34:13.760 --> 00:34:16.750
+this scaled natural gradient,
+by updating the global
+
+00:34:16.750 --> 00:34:19.720
+variational parameter according
+to this scaled natural gradient.
+
+00:34:19.720 --> 00:34:22.570
+And then I repeat, all right?
+
+00:34:22.570 --> 00:34:24.330
+So for LDA how does this look?
+
+00:34:24.330 --> 00:34:26.110
+Sample one document.
+
+00:34:26.110 --> 00:34:28.910
+Estimate how it
+exhibits the topics and
+
+00:34:28.910 --> 00:34:32.150
+then update the global topics
+based on those estimates.
+
+00:34:32.150 --> 00:34:33.260
+Why is this a good idea?
+
+00:34:33.260 --> 00:34:33.890
+Here's a picture.
+
+00:34:35.250 --> 00:34:40.090
+So in the top part of this plot,
+we have on the X axis,
+
+00:34:40.090 --> 00:34:41.752
+document seen at a log scale.
+
+00:34:41.752 --> 00:34:45.880
+So, here I'm fitting an LDA model,
+and this is how many documents,
+
+00:34:45.880 --> 00:34:48.620
+I've had to do some kind of
+inference about on the X axis.
+
+00:34:48.620 --> 00:34:51.780
+And the Y axis is perplexity,
+it's a measure of model fitness,
+
+00:34:51.780 --> 00:34:53.860
+where lower numbers are better.
+
+00:34:53.860 --> 00:34:56.641
+All right, so
+first look at this line, batch 98k.
+
+00:34:56.641 --> 00:34:57.960
+This is 100,000 documents.
+
+00:34:57.960 --> 00:35:02.078
+This is about what we could do with
+the classical mean field variation
+
+00:35:02.078 --> 00:35:06.054
+inference, and you can see that
+before we even get one point on this
+
+00:35:06.054 --> 00:35:10.959
+estimate of model fitness, we have
+to have observed 100,000 documents.
+
+00:35:10.959 --> 00:35:12.944
+The whole collection and
+then at each iteration,
+
+00:35:12.944 --> 00:35:14.750
+we process the whole collection.
+
+00:35:14.750 --> 00:35:18.250
+But with stochastic variational
+inference we can analyze the whole
+
+00:35:18.250 --> 00:35:20.620
+document collection,
+3.5 million, and
+
+00:35:20.620 --> 00:35:23.290
+by the time we've processed the same
+amount of documents that we
+
+00:35:23.290 --> 00:35:26.190
+processed in just one iteration of
+batch inference, what's called batch
+
+00:35:26.190 --> 00:35:30.070
+inference, we're already at
+a much better place, okay?
+
+00:35:30.070 --> 00:35:33.906
+And more importantly, this is what
+lets us do things like estimate
+
+00:35:33.906 --> 00:35:37.412
+topics from millions of
+New York Times articles on a laptop.
+
+00:35:39.544 --> 00:35:41.365
+And again, this is general for
+
+00:35:41.365 --> 00:35:45.300
+that whole class of conditionally
+conjugate models, all right?
+
+00:35:45.300 --> 00:35:49.844
+So now you can scale up any of these
+models from the 90s and 2000s,
+
+00:35:49.844 --> 00:35:52.949
+you can scale them up to
+very large data sets using
+
+00:35:52.949 --> 00:35:55.410
+Stochastic variational inference.
+
+00:35:55.410 --> 00:35:57.470
+Okay, that's how we
+got these pictures.
+
+00:35:57.470 --> 00:35:58.022
+All right.
+So,
+
+00:35:58.022 --> 00:36:01.855
+that is kind of where things
+were a couple of years ago, and
+
+00:36:01.855 --> 00:36:04.057
+now I'll turn it over to Rajesh.
+
+00:36:04.057 --> 00:36:12.045
+>> [APPLAUSE]
+>> All right, thanks Dave.
+
+00:36:12.045 --> 00:36:18.410
+I'm gonna get into,
+did we really hit that promise.
+
+00:36:18.410 --> 00:36:21.330
+We talked about how
+we have a question.
+
+00:36:21.330 --> 00:36:22.610
+Have some knowledge.
+
+00:36:22.610 --> 00:36:26.860
+Want to use probability models
+to express that knowledge.
+
+00:36:26.860 --> 00:36:30.110
+Take our data, find the patterns,
+and then predict and explore.
+
+00:36:31.610 --> 00:36:34.940
+Well, I'd say that for conditionally
+conjugate models, we saw a pretty
+
+00:36:34.940 --> 00:36:38.240
+good way to do this, stochastic
+variational inference scales.
+
+00:36:38.240 --> 00:36:41.940
+It works for
+this pretty large class of models.
+
+00:36:41.940 --> 00:36:45.101
+But one question we might have is,
+what about the general case?
+
+00:36:45.101 --> 00:36:50.992
+So to get into this, let's go over
+these variational inference recipe.
+
+00:36:50.992 --> 00:36:53.657
+So like if you sit down with
+a model like what you do?
+
+00:36:53.657 --> 00:36:57.172
+So here we have our
+little tired Phd student,
+
+00:36:57.172 --> 00:37:00.236
+may be jet-lagged Phd student today.
+
+00:37:00.236 --> 00:37:04.188
+He's thought of a model which is
+a joint distribution over the latent
+
+00:37:04.188 --> 00:37:05.489
+variable Z and data X.
+
+00:37:07.640 --> 00:37:10.650
+The next thing that happens
+is you need to choose
+
+00:37:10.650 --> 00:37:13.450
+a variational approximation,
+which is a distribution
+
+00:37:13.450 --> 00:37:17.750
+over the latent variables with
+some free parameters, nu.
+
+00:37:20.160 --> 00:37:21.410
+Then we get an objective.
+
+00:37:21.410 --> 00:37:23.880
+This objective is
+the evidence lower bound.
+
+00:37:23.880 --> 00:37:25.800
+It is a function of nu.
+
+00:37:25.800 --> 00:37:28.930
+And part of the dependence
+of nu comes from the actual,
+
+00:37:28.930 --> 00:37:30.920
+dependence on nu comes
+form the expectation.
+
+00:37:32.070 --> 00:37:34.870
+And so to optimize this,
+we need to take that expectation.
+
+00:37:36.360 --> 00:37:39.570
+So for example, we can get
+a function that looks something like
+
+00:37:39.570 --> 00:37:42.000
+this after we take the expectation.
+
+00:37:42.000 --> 00:37:45.670
+It's explicitly in terms of nu and
+to optimize this,
+
+00:37:45.670 --> 00:37:48.320
+we can take our standard approach.
+
+00:37:48.320 --> 00:37:50.799
+We compute its gradient and
+
+00:37:50.799 --> 00:37:55.118
+we optimize with some
+form of gradient ascent.
+
+00:37:57.428 --> 00:38:00.360
+So this recipe is
+fairly straightforward.
+
+00:38:00.360 --> 00:38:04.250
+I just work from the outside in and
+then put it into an optimizer and
+
+00:38:04.250 --> 00:38:06.920
+we can summarize it with
+this picture right here.
+
+00:38:06.920 --> 00:38:10.400
+We have a model,
+I have variational approximation,
+
+00:38:10.400 --> 00:38:13.560
+compute the expectation,
+take a derivative and then optimize.
+
+00:38:15.870 --> 00:38:20.350
+But let's see how this works for
+a fairly simple model.
+
+00:38:20.350 --> 00:38:22.560
+So, this model is
+Bayesian Logistic Regression.
+
+00:38:22.560 --> 00:38:25.230
+If you're familiar with
+the logistic regression
+
+00:38:25.230 --> 00:38:28.610
+which is a binary labeled
+prediction problem.
+
+00:38:30.500 --> 00:38:33.790
+The Bayesian version puts a prior
+on the regression coefficient.
+
+00:38:33.790 --> 00:38:38.740
+So here, X are the covariance,
+Y are the binary labels,
+
+00:38:38.740 --> 00:38:42.530
+Z is the regression coefficient and
+that has a normal zero one prior.
+
+00:38:44.860 --> 00:38:48.370
+Let's make this even simpler so
+we can actually see what happens.
+
+00:38:48.370 --> 00:38:50.640
+Let's assume we only
+have a single data point.
+
+00:38:52.290 --> 00:38:56.240
+Let's also assume our
+covariants are scalar, and
+
+00:38:56.240 --> 00:38:59.080
+let's choose our approximating
+family to be a normal distribution.
+
+00:38:59.080 --> 00:38:59.910
+It's nice.
+
+00:38:59.910 --> 00:39:02.150
+We have some properties
+we can exploit.
+
+00:39:02.150 --> 00:39:06.070
+And let's write down the evidence
+lower bound for this.
+
+00:39:07.960 --> 00:39:11.270
+So to follow the recipe,
+now that we have that lower bound.
+
+00:39:11.270 --> 00:39:14.390
+We have to compute that integral,
+we have to take the expectation.
+
+00:39:14.390 --> 00:39:17.050
+And so the first step,
+we just write it out.
+
+00:39:18.730 --> 00:39:21.760
+For the next step, we can use
+our properties for Gaussian
+
+00:39:21.760 --> 00:39:26.050
+distributions, you now expand the
+first term to get the expectation
+
+00:39:26.050 --> 00:39:30.120
+of the square and the second term is
+the anthropy up to some constant C.
+
+00:39:31.900 --> 00:39:36.670
+Next, we can expand out
+the likelihood of the data, so
+
+00:39:36.670 --> 00:39:40.520
+that just the vernuli likelihood
+of a single data point.
+
+00:39:42.070 --> 00:39:46.143
+We can take the expectation on
+the first term because you know, Z,
+
+00:39:46.143 --> 00:39:50.147
+you know the expectation of the
+Gaussian running variable but for
+
+00:39:50.147 --> 00:39:52.138
+that last term, we're stuck.
+
+00:39:52.138 --> 00:39:56.659
+We can analytically take that
+expectation, the dependence on,
+
+00:39:56.659 --> 00:40:01.427
+we'd like to do it because we wanna
+make the dependence on parameters
+
+00:40:01.427 --> 00:40:04.651
+explicit so
+we can use gradients to optimize.
+
+00:40:04.651 --> 00:40:08.471
+And so, we need something else.
+
+00:40:08.471 --> 00:40:10.660
+So there are some options for this.
+
+00:40:10.660 --> 00:40:13.650
+We can further bound that object.
+
+00:40:13.650 --> 00:40:15.220
+We can analyze that function.
+
+00:40:15.220 --> 00:40:18.570
+Find the lower bound and
+we get a consistent objective.
+
+00:40:18.570 --> 00:40:21.970
+That is very model specific because
+that function is going to look
+
+00:40:21.970 --> 00:40:23.359
+different for
+different kinds of models.
+
+00:40:24.774 --> 00:40:27.779
+And you can also have
+more general things, but
+
+00:40:27.779 --> 00:40:31.980
+these also still require
+computations around the model.
+
+00:40:31.980 --> 00:40:34.770
+And while we think that hey,
+there's one example,
+
+00:40:34.770 --> 00:40:37.820
+let's really work on that example so
+this might be okay.
+
+00:40:37.820 --> 00:40:41.660
+But here's a different
+list of models, and
+
+00:40:41.660 --> 00:40:43.660
+all these models are nonconjugate.
+
+00:40:43.660 --> 00:40:46.200
+Meaning that they don't fall
+into the class that Dave
+
+00:40:46.200 --> 00:40:47.630
+mentioned earlier.
+
+00:40:47.630 --> 00:40:50.550
+So you know we have nonlinear
+time series models,
+
+00:40:50.550 --> 00:40:54.730
+we have models with attention,
+regression models.
+
+00:40:54.730 --> 00:40:57.210
+Even fancier versions
+of the topic model,
+
+00:40:58.370 --> 00:41:02.930
+deep exponential families,
+Bayesian neural networks.
+
+00:41:04.030 --> 00:41:06.790
+The models before were really very
+limited because they were defined
+
+00:41:06.790 --> 00:41:07.890
+with conjugacy in mind.
+
+00:41:07.890 --> 00:41:10.350
+Now that you're free,
+this list can go on for,
+
+00:41:10.350 --> 00:41:12.200
+we're still creating them.
+
+00:41:12.200 --> 00:41:15.010
+But because of that we really
+need a solution that doesn't
+
+00:41:15.010 --> 00:41:17.010
+entail model-specific work.
+
+00:41:17.010 --> 00:41:19.490
+Because this kind of derivation
+
+00:41:19.490 --> 00:41:22.190
+really slows down the process
+of developing these models and
+
+00:41:22.190 --> 00:41:24.040
+figuring out what is
+the right tool for your data.
+
+00:41:26.043 --> 00:41:29.300
+And what we want is
+summarized in this picture.
+
+00:41:29.300 --> 00:41:34.910
+We wanna be able to take any model,
+massive data, some reasonable
+
+00:41:34.910 --> 00:41:38.960
+facts about the variational families
+that were introduced earlier.
+
+00:41:38.960 --> 00:41:41.340
+Feed it into this
+computational engine,
+
+00:41:41.340 --> 00:41:43.110
+we'll call black box
+variational inference, and
+
+00:41:43.110 --> 00:41:45.989
+get a posterior distribution or
+approximation of it.
+
+00:41:49.040 --> 00:41:52.320
+So, what's the problem in
+the classical variational
+
+00:41:52.320 --> 00:41:56.210
+inference recipe that really
+stops this from happening?
+
+00:41:56.210 --> 00:41:59.780
+It's really this computation
+of this integral to make
+
+00:41:59.780 --> 00:42:03.700
+the elbow explicit in terms of
+the variational parameters do.
+
+00:42:03.700 --> 00:42:05.190
+And that's why it's
+highlighted in red.
+
+00:42:05.190 --> 00:42:06.829
+So, red is like a stoplight.
+
+00:42:08.980 --> 00:42:13.010
+But if we switch the order
+of these two steps, so
+
+00:42:13.010 --> 00:42:17.330
+before computing the expectation,
+
+00:42:17.330 --> 00:42:21.340
+we compute the gradient then try
+to approximate the expectation.
+
+00:42:22.540 --> 00:42:25.950
+We might find success and
+why might this work.
+
+00:42:25.950 --> 00:42:29.399
+The same reason we saw earlier,
+stochastic optimization.
+
+00:42:30.720 --> 00:42:32.100
+But to do this,
+
+00:42:32.100 --> 00:42:35.580
+we'll need a general way to
+compute gradients of expectations.
+
+00:42:36.790 --> 00:42:39.770
+So I'm going to go over this
+slide carefully because a lot of
+
+00:42:39.770 --> 00:42:44.000
+what I'll talk about in
+the next parts relies on this.
+
+00:42:44.000 --> 00:42:47.910
+So imagine the term
+inside the elbow,
+
+00:42:47.910 --> 00:42:50.070
+which is a function
+of latent variables.
+
+00:42:50.070 --> 00:42:51.408
+And the variational parameters.
+
+00:42:51.408 --> 00:42:56.980
+That's log p(x,z) minus
+the variational distribution.
+
+00:42:56.980 --> 00:43:01.910
+To compute its gradient without
+taking the expectation first,
+
+00:43:01.910 --> 00:43:03.500
+we first write in integration form.
+
+00:43:05.260 --> 00:43:11.390
+We make the assumption that swap
+the integration in differentiation.
+
+00:43:11.390 --> 00:43:14.180
+Which is true for
+a relatively general case.
+
+00:43:15.700 --> 00:43:20.200
+This next line here is just the
+product rule, so we differentiate
+
+00:43:20.200 --> 00:43:23.300
+the first term and then we
+differentiate the second term.
+
+00:43:25.320 --> 00:43:30.220
+The third line,
+we rewrite the gradient with
+
+00:43:30.220 --> 00:43:34.880
+respect to mu of q using something
+called the log derivative trick.
+
+00:43:36.200 --> 00:43:39.700
+And what this lets us do is it
+let's us introduce the density
+
+00:43:39.700 --> 00:43:44.350
+into both terms so we can rewrite
+this object as an expectation.
+
+00:43:45.880 --> 00:43:50.370
+And this is really the tool that'll
+make the rest of the talk work.
+
+00:43:52.690 --> 00:43:57.730
+So a roadmap, I'm going to cover
+two kinds of gradient estimators
+
+00:43:57.730 --> 00:44:01.390
+that are built from that
+differentiation rule.
+
+00:44:01.390 --> 00:44:03.670
+Score function gradient and
+pathways gradient.
+
+00:44:03.670 --> 00:44:08.800
+And lastly, I'm gonna talk about how
+to make inference with data large
+
+00:44:08.800 --> 00:44:14.210
+even faster than we saw with So
+
+00:44:14.210 --> 00:44:15.600
+score function
+gradients of the ELBO.
+
+00:44:17.460 --> 00:44:21.772
+So the very first term here
+we have just written down our
+
+00:44:21.772 --> 00:44:25.260
+differentiation rule
+we derived earlier.
+
+00:44:26.740 --> 00:44:28.080
+To simplify this,
+
+00:44:28.080 --> 00:44:33.040
+we see that the second term Is
+just the score function hence how
+
+00:44:33.040 --> 00:44:36.230
+the score function estimator gets
+its name, has expectate zero.
+
+00:44:37.280 --> 00:44:42.770
+We get the form of the gradient
+given the model probability.
+
+00:44:42.770 --> 00:44:46.160
+The probability variational
+approximation times
+
+00:44:46.160 --> 00:44:47.090
+the square function.
+
+00:44:48.330 --> 00:44:51.435
+This estimator, we call
+the square function estimator.
+
+00:44:51.435 --> 00:44:56.200
+But also has other names likelihood
+ratio from the Monte Carlo
+
+00:44:56.200 --> 00:45:02.035
+literature or reinforce from
+reinforcement learning.
+
+00:45:02.035 --> 00:45:05.064
+But how do I use this,
+now that the gradients expectation,
+
+00:45:05.064 --> 00:45:07.380
+what's the next step?
+
+00:45:07.380 --> 00:45:10.030
+Really the next step
+
+00:45:10.030 --> 00:45:14.880
+is once an object is an expectation
+with a distribution that I know,
+
+00:45:14.880 --> 00:45:18.350
+I can use Monte Carlo to construct
+noisy, unbiased gradients.
+
+00:45:20.040 --> 00:45:25.080
+So, specifically,
+we can sample from Q and we can take
+
+00:45:25.080 --> 00:45:30.500
+the average of over those samples of
+the quantity inside the expectation.
+
+00:45:30.500 --> 00:45:33.689
+As we saw earlier, if you have
+unbiased stochastic gradients,
+
+00:45:35.170 --> 00:45:37.610
+we can get an algorithm that
+will converge to a local optima.
+
+00:45:39.520 --> 00:45:41.590
+And let's look at that algorithm.
+
+00:45:41.590 --> 00:45:45.890
+This algorithm is just Basic
+Black Box Variational Inference.
+
+00:45:45.890 --> 00:45:50.140
+What you do is you draw a bunch of
+samples from your approximation,
+
+00:45:50.140 --> 00:45:53.289
+you choose a learning rate from
+the roman numeral sequence.
+
+00:45:54.550 --> 00:45:58.440
+And you update your current
+parameters with the learning rate
+
+00:45:58.440 --> 00:46:01.770
+times the Monte Carlos
+to cast the gradient
+
+00:46:01.770 --> 00:46:05.740
+that we defined on the previous
+slide and then that's really it.
+
+00:46:05.740 --> 00:46:11.630
+Theoretically this would work
+if you had enough computation.
+
+00:46:11.630 --> 00:46:13.240
+So what are the requirements for
+inference?
+
+00:46:13.240 --> 00:46:16.120
+Do we really meet these
+black box criteria?
+
+00:46:16.120 --> 00:46:18.190
+Well, if we look at our formula,
+
+00:46:18.190 --> 00:46:21.290
+we need to be able to sample from
+the variational approximation.
+
+00:46:21.290 --> 00:46:24.180
+We choose that, so and
+it's not related to the model so
+
+00:46:24.180 --> 00:46:25.200
+we have some flexibility there.
+
+00:46:25.200 --> 00:46:28.720
+We need to be evaluate
+the score function.
+
+00:46:28.720 --> 00:46:30.270
+Again, we choose q,
+
+00:46:30.270 --> 00:46:32.799
+we can derive that once,
+put it in a table and reuse it.
+
+00:46:34.140 --> 00:46:37.120
+And we need to be able to evaluate
+the log probability of the model
+
+00:46:37.120 --> 00:46:40.110
+which is the same as
+specifying the model itself.
+
+00:46:40.110 --> 00:46:44.260
+And we need the probability of
+the variational approximation too.
+
+00:46:45.490 --> 00:46:49.670
+The key thing here is really this,
+there's no model specific work.
+
+00:46:49.670 --> 00:46:51.420
+Our criteria are really satisfied.
+
+00:46:51.420 --> 00:46:54.220
+All I have to do is write
+down the joint distribution.
+
+00:46:54.220 --> 00:46:56.010
+And so
+it really does look like this.
+
+00:46:56.010 --> 00:46:58.820
+I have a bunch of facts about about
+my variational approximation,
+
+00:46:58.820 --> 00:47:02.620
+how to sample it,
+it's score function, it's density.
+
+00:47:02.620 --> 00:47:06.310
+I can take in my model which is in
+the form of this joint distribution.
+
+00:47:06.310 --> 00:47:09.240
+I can take in data and I can
+get an approximate posterior by
+
+00:47:09.240 --> 00:47:10.550
+running that algorithm
+I just showed.
+
+00:47:12.577 --> 00:47:16.570
+But, that algorithm
+doesn't work directly.
+
+00:47:17.740 --> 00:47:19.660
+Variance really can be a problem.
+
+00:47:19.660 --> 00:47:22.370
+So when you do
+stochastic optimization,
+
+00:47:22.370 --> 00:47:24.020
+your gradients are noisy.
+
+00:47:24.020 --> 00:47:26.650
+The more noise you have
+in those gradients,
+
+00:47:26.650 --> 00:47:29.410
+the slower the optimization process.
+
+00:47:29.410 --> 00:47:32.730
+This wasn't really a problem in
+the classical setup because you took
+
+00:47:32.730 --> 00:47:35.600
+the expectation first,
+then took the derivative.
+
+00:47:35.600 --> 00:47:36.770
+You're noise free.
+
+00:47:36.770 --> 00:47:40.460
+And now that we're sampling,
+you can get quite high variants.
+
+00:47:40.460 --> 00:47:43.990
+And this picture really gives
+some intuition around that.
+
+00:47:43.990 --> 00:47:47.320
+So this is just the score function
+of a Gaussian distribution, and
+
+00:47:47.320 --> 00:47:49.408
+this is the PDF of
+a Gaussian distribution.
+
+00:47:49.408 --> 00:47:57.600
+Intuitively, sampling rare
+values can lead to large scores.
+
+00:47:57.600 --> 00:47:58.720
+Which can give you high variance,
+and
+
+00:47:58.720 --> 00:48:01.040
+this is a problem
+we need to address.
+
+00:48:02.920 --> 00:48:06.330
+One solution for
+this are control variance.
+
+00:48:06.330 --> 00:48:08.760
+The idea behind a control variance
+that comes from Monte Carlo
+
+00:48:08.760 --> 00:48:12.520
+estimation is to replace a function
+that we're trying to compute its
+
+00:48:12.520 --> 00:48:17.130
+expectation of with another function
+that has the same expectation but
+
+00:48:17.130 --> 00:48:19.150
+possibly lower variance.
+
+00:48:19.150 --> 00:48:21.350
+And one general way to
+create that function,
+
+00:48:21.350 --> 00:48:24.600
+so hat f,
+is to take the original function and
+
+00:48:24.600 --> 00:48:27.720
+subtract from it something
+that has expectation zero.
+
+00:48:27.720 --> 00:48:31.850
+So take a general function h,
+and subtract its expectation.
+
+00:48:31.850 --> 00:48:33.250
+It has expectation zero.
+
+00:48:34.780 --> 00:48:38.010
+And in this case, you know,
+h is the control variable,
+
+00:48:38.010 --> 00:48:39.440
+it's the function of our choice.
+
+00:48:39.440 --> 00:48:42.190
+And you can choose this scaling
+factor here to minimize
+
+00:48:42.190 --> 00:48:43.430
+the variance.
+
+00:48:43.430 --> 00:48:46.200
+So this picture kinda
+depicts what's happening.
+
+00:48:46.200 --> 00:48:49.230
+So again, in red,
+I have a Gaussian distribution.
+
+00:48:49.230 --> 00:48:53.600
+In blue, I have a function f, whose
+expectation I'm trying to estimate.
+
+00:48:53.600 --> 00:48:55.100
+It's x plus x squared.
+
+00:48:56.840 --> 00:49:00.130
+Let's say that I use X squared
+as a control variate using
+
+00:49:00.130 --> 00:49:03.470
+the fact that I know what
+the expectation of X squared is for
+
+00:49:03.470 --> 00:49:05.270
+Gaussian distribution.
+
+00:49:05.270 --> 00:49:09.720
+The function F hat gets
+changed from this blue version
+
+00:49:09.720 --> 00:49:12.420
+to this green version,
+which has lower variability.
+
+00:49:14.280 --> 00:49:17.170
+If I take this all the way and
+say that h is equal to F.
+
+00:49:17.170 --> 00:49:19.730
+I'll actually get something
+that has zero variance.
+
+00:49:19.730 --> 00:49:23.550
+We can see this from this formula
+here where the f will cancel and
+
+00:49:23.550 --> 00:49:26.590
+you'll actually just get the f
+hat is equal to the expectation,
+
+00:49:26.590 --> 00:49:27.590
+which is what we're looking for.
+
+00:49:29.690 --> 00:49:31.400
+But we need a way to specify h.
+
+00:49:31.400 --> 00:49:36.700
+We really want to maintain our
+black box criteria because we're
+
+00:49:36.700 --> 00:49:41.340
+after some level of
+genericness in your inference.
+
+00:49:43.120 --> 00:49:47.660
+And what that means is we need a
+function that has known expectation
+
+00:49:47.660 --> 00:49:50.230
+for a broad class of models.
+
+00:49:51.670 --> 00:49:54.030
+And we saw one already.
+
+00:49:54.030 --> 00:49:58.734
+So, if we set h to be the score
+function, we saw previously
+
+00:49:58.734 --> 00:50:03.630
+that this thing has expectation
+zero for a large number of q.
+
+00:50:03.630 --> 00:50:05.258
+And because of that,
+
+00:50:05.258 --> 00:50:10.330
+we can directly use it as a control
+variate to reduce the variance.
+
+00:50:10.330 --> 00:50:12.998
+There are a lot of other techniques
+from Monte Carlo that can help here
+
+00:50:12.998 --> 00:50:15.540
+and that are still being applied
+to variational inference.
+
+00:50:15.540 --> 00:50:18.437
+Things like importance sampling,
+quasi Monte Carlo and
+
+00:50:18.437 --> 00:50:21.581
+Rao-Blackwellization which is
+a kind of marginalization.
+
+00:50:24.258 --> 00:50:28.908
+And I'm coming back to this model
+list with the algorithm we have,
+
+00:50:28.908 --> 00:50:32.646
+we can actually run inference for
+all these models and
+
+00:50:32.646 --> 00:50:35.655
+even many more that we have yet
+to think of.
+
+00:50:35.655 --> 00:50:38.971
+And I think that the nice point
+to make here is that rather than
+
+00:50:38.971 --> 00:50:41.119
+designing models based on inference,
+
+00:50:41.119 --> 00:50:43.785
+we can design them based
+on the data we have and for
+
+00:50:43.785 --> 00:50:47.648
+the problem that we're trying to
+solve and tailor it to that problem.
+
+00:50:51.510 --> 00:50:56.760
+So we have a current set of black
+box assumptions which are sampling
+
+00:50:56.760 --> 00:51:01.275
+from q, it's core function and
+evaluating densities.
+
+00:51:01.275 --> 00:51:06.078
+Can we make additional assumptions
+that make inference easier or
+
+00:51:06.078 --> 00:51:06.784
+faster?
+
+00:51:09.060 --> 00:51:12.054
+Unless we get us to the second
+estimator for various and
+
+00:51:12.054 --> 00:51:14.340
+inference call
+the pathways estimator.
+
+00:51:16.290 --> 00:51:20.496
+So, the two assumptions we'll
+make are the following.
+
+00:51:20.496 --> 00:51:25.097
+The first assumption will be that
+for our variational approximation.
+
+00:51:25.097 --> 00:51:29.440
+So these coming from our variational
+approximation, right there.
+
+00:51:29.440 --> 00:51:33.728
+We can rewrite it in terms of a
+noise source that's parameter-free.
+
+00:51:33.728 --> 00:51:36.617
+What that means is given
+some epsilon that comes
+
+00:51:36.617 --> 00:51:40.740
+from a distribution s with no
+parameters, so not dependent on new.
+
+00:51:41.950 --> 00:51:45.970
+We can then transform that
+noise source with a function
+
+00:51:45.970 --> 00:51:49.640
+that depends on the parameters to
+get a random variable that has
+
+00:51:49.640 --> 00:51:51.300
+the same distribution
+as the original.
+
+00:51:52.710 --> 00:51:56.716
+So that's a lot, but we're familiar
+with several examples to this.
+
+00:51:56.716 --> 00:52:01.288
+One simple one is if you take
+a normal distribution and say,
+
+00:52:01.288 --> 00:52:05.990
+I want a normal with some mean and
+some variance.
+
+00:52:05.990 --> 00:52:08.431
+One way to do this is to draw
+from the standard normal.
+
+00:52:08.431 --> 00:52:11.053
+So there are no parameters here,
+it's zero and one and
+
+00:52:11.053 --> 00:52:13.970
+then just do a location scale
+transformation of that.
+
+00:52:13.970 --> 00:52:18.961
+So multiply by the standard
+deviation and then add the mean.
+
+00:52:18.961 --> 00:52:22.736
+The second assumption that we'll
+make are that the model and
+
+00:52:22.736 --> 00:52:26.957
+the variational approximation
+are differentiable with respect to
+
+00:52:26.957 --> 00:52:30.289
+the latent variables and
+this smoothness assumption
+
+00:52:30.289 --> 00:52:33.708
+will buy us something,
+we'll see in the next slides.
+
+00:52:36.185 --> 00:52:41.642
+So to compute the gradients in this
+way, recall our original gradient
+
+00:52:41.642 --> 00:52:46.910
+formula which is the score function
+times log p minus log q times this
+
+00:52:46.910 --> 00:52:52.200
+derivative and we can rewrite this
+using our transformation rule.
+
+00:52:53.360 --> 00:52:57.820
+And when we do that, we get a very
+similar form, except now we have
+
+00:52:57.820 --> 00:53:01.390
+the score function with respect to
+this parameter free distribution.
+
+00:53:01.390 --> 00:53:03.802
+We have the elbow of
+the transformation and
+
+00:53:03.802 --> 00:53:07.219
+we have the gradient of the
+transformed elbow with respect to
+
+00:53:07.219 --> 00:53:08.227
+its parameters.
+
+00:53:10.900 --> 00:53:14.800
+One thing to note here is like
+in the score function estimator,
+
+00:53:14.800 --> 00:53:16.427
+the second term was zero.
+
+00:53:16.427 --> 00:53:20.878
+But in this case, because the noise
+distribution does not depend on
+
+00:53:20.878 --> 00:53:22.920
+the parameters, it's zero.
+
+00:53:22.920 --> 00:53:24.500
+So, we can simplify this.
+
+00:53:24.500 --> 00:53:30.097
+So we have the second term,
+just expanding it out here.
+
+00:53:30.097 --> 00:53:32.031
+We can expanding out here and
+using the chain rule.
+
+00:53:32.031 --> 00:53:36.320
+We get the derivative of the model
+times the chain rule term minus
+
+00:53:36.320 --> 00:53:40.450
+the score function and we can get
+rid of the score function term
+
+00:53:40.450 --> 00:53:44.502
+using the same fact we used earlier,
+and this is also known as
+
+00:53:44.502 --> 00:53:48.970
+the reparameterization gradient
+if you're familiar with that.
+
+00:53:51.010 --> 00:53:52.928
+So, why would we want to do this?
+
+00:53:52.928 --> 00:53:57.369
+We limited the class of models and
+made assumptions that
+
+00:53:57.369 --> 00:54:02.960
+are a little bit, maybe odd, but
+it really does buy us something.
+
+00:54:02.960 --> 00:54:08.084
+So here, we have the variance of
+the gradient on the y-axis and
+
+00:54:08.084 --> 00:54:12.532
+on the x-axis and this is just
+the number of Monte Carlo
+
+00:54:12.532 --> 00:54:16.128
+samples we're taking,
+to estimate that.
+
+00:54:16.128 --> 00:54:20.672
+The basic estimator describe
+has variance that's orders of
+
+00:54:20.672 --> 00:54:24.503
+magnitude larger than this
+pathwise estimator and
+
+00:54:24.503 --> 00:54:29.620
+it's also larger than using
+that score function estimator.
+
+00:54:29.620 --> 00:54:32.631
+It's also smaller than using
+the score function estimator with
+
+00:54:32.631 --> 00:54:35.763
+a control variant and this is why
+this approach is really popular.
+
+00:54:39.090 --> 00:54:40.888
+So comparing between the two,
+
+00:54:40.888 --> 00:54:44.972
+we have that the score function
+estimator differentiates the density
+
+00:54:44.972 --> 00:54:48.640
+while the pathwise estimator
+differentiates the function and
+
+00:54:48.640 --> 00:54:50.944
+these are really
+the only two options.
+
+00:54:50.944 --> 00:54:54.432
+Because if you remember what
+that integral looks like,
+
+00:54:54.432 --> 00:54:57.853
+it's the integral of sum
+density times sum function.
+
+00:54:57.853 --> 00:55:01.423
+The score function one
+works pretty generally.
+
+00:55:01.423 --> 00:55:03.650
+It works for
+a broad class of approximations.
+
+00:55:03.650 --> 00:55:07.095
+We don't need it to be
+parameterizable, but
+
+00:55:07.095 --> 00:55:09.731
+variance is really a big problem.
+
+00:55:09.731 --> 00:55:14.250
+And so, what the pathwise estimator
+is all about is making this set
+
+00:55:14.250 --> 00:55:15.470
+of assumptions.
+
+00:55:15.470 --> 00:55:19.612
+So differentiable models and
+some amount of reparameterization to
+
+00:55:19.612 --> 00:55:22.300
+get generally better
+behaved variance, so
+
+00:55:22.300 --> 00:55:24.998
+you can deploy it on
+new models more easily.
+
+00:55:27.609 --> 00:55:31.440
+So, the last thing I'm gonna talk
+about is amortized inference.
+
+00:55:34.040 --> 00:55:39.646
+So, recall the hierarchical model
+that Dave covered in his section.
+
+00:55:39.646 --> 00:55:43.245
+In this model, you have a global
+latent variable which is beta,
+
+00:55:43.245 --> 00:55:44.920
+which is shared across data.
+
+00:55:46.320 --> 00:55:50.906
+You have a local variable z and
+you have data xi, and
+
+00:55:50.906 --> 00:55:55.706
+this local variables are one for
+each data point, and
+
+00:55:55.706 --> 00:55:58.703
+that's why they're in the box.
+
+00:55:58.703 --> 00:56:00.909
+The join distribution
+has this form here,
+
+00:56:00.909 --> 00:56:03.370
+which is a product across
+those local factors.
+
+00:56:05.310 --> 00:56:06.600
+And as we saw earlier,
+
+00:56:06.600 --> 00:56:12.310
+we can define a main field very
+strong approximation for this and
+
+00:56:12.310 --> 00:56:17.190
+we can do stochastic variational
+inference, but there is a problem
+
+00:56:17.190 --> 00:56:20.340
+with that stochastic variational
+inference in this setup.
+
+00:56:20.340 --> 00:56:24.140
+Mainly, the expectations that we
+require are no longer tractable.
+
+00:56:24.140 --> 00:56:26.920
+It's the same problem we saw earlier
+when we were trying to compute that
+
+00:56:26.920 --> 00:56:31.700
+integral, you just can't get
+a nice analytic form for it.
+
+00:56:31.700 --> 00:56:33.900
+So instead,
+we need to do something else.
+
+00:56:33.900 --> 00:56:37.851
+We could do the same trick of doing
+stochastic optimization inside
+
+00:56:37.851 --> 00:56:38.979
+an inner loop, but
+
+00:56:38.979 --> 00:56:43.150
+now the stochastic variational
+inference algorithm would get slow.
+
+00:56:43.150 --> 00:56:46.885
+Because instead of just writing the
+equation for an expectation, you're
+
+00:56:46.885 --> 00:56:50.160
+gonna run an optimization algorithm
+for each data point you get.
+
+00:56:52.740 --> 00:56:57.837
+And so, the idea here is
+to learn a mapping that
+
+00:56:57.837 --> 00:57:04.528
+goes from a data point to its
+local variational parameters.
+
+00:57:04.528 --> 00:57:06.124
+And so, let's see how to do that.
+
+00:57:06.124 --> 00:57:08.875
+And so for the top line,
+we have the evidence lower bound for
+
+00:57:08.875 --> 00:57:11.200
+a general hierarchical model.
+
+00:57:11.200 --> 00:57:17.110
+This has the terms of
+just the data terms and
+
+00:57:17.110 --> 00:57:20.360
+it has the entropy part,
+which I expanded
+
+00:57:20.360 --> 00:57:25.230
+just to see what's happening for
+the per data variational parameters.
+
+00:57:26.820 --> 00:57:30.620
+So the way that amortizing it
+works with an inference network
+
+00:57:30.620 --> 00:57:34.300
+is to say that instead of
+having just the phi i for
+
+00:57:34.300 --> 00:57:38.940
+each single data point,
+you can make that phi i
+
+00:57:38.940 --> 00:57:44.300
+to be a function of xi with some
+new variational parameters theta.
+
+00:57:44.300 --> 00:57:48.482
+So, why this is called amortized
+is because the variational
+
+00:57:48.482 --> 00:57:53.320
+parameters that used to be one for
+each data point have gotten replaced
+
+00:57:53.320 --> 00:57:57.923
+with parameters to a function that
+are shared across data points.
+
+00:58:01.010 --> 00:58:06.076
+And making this change allows us
+to apply these black box inference
+
+00:58:06.076 --> 00:58:11.053
+techniques directly to get something
+that scales across data and
+
+00:58:11.053 --> 00:58:14.308
+is general for
+a broad class of models, and
+
+00:58:14.308 --> 00:58:18.651
+that's what this algorithm
+does here where we can sample
+
+00:58:18.651 --> 00:58:23.381
+a global latent variable from
+its variation approximation.
+
+00:58:23.381 --> 00:58:24.580
+We sample a data point.
+
+00:58:25.730 --> 00:58:30.159
+We can sample a local latent
+variable given its parameters and
+
+00:58:30.159 --> 00:58:34.164
+then we just use stochastic
+optimization to update both
+
+00:58:34.164 --> 00:58:38.594
+the variational approximation
+on the global variables, and
+
+00:58:38.594 --> 00:58:43.364
+the parameters for the inference
+network on the local variables,
+
+00:58:43.364 --> 00:58:46.295
+and that's what these
+two updates are.
+
+00:58:48.716 --> 00:58:53.350
+So, this is really a computational
+and statistical tradeoff.
+
+00:58:53.350 --> 00:58:59.800
+What I mean by that is by choosing
+the amortized family, we've
+
+00:58:59.800 --> 00:59:05.720
+shrunken the class of variational
+approximations and the size
+
+00:59:05.720 --> 00:59:09.260
+of how much we shrunk it by depends
+on the complexity of the function.
+
+00:59:10.370 --> 00:59:15.284
+So, one way to think about this
+is imagine just the best case
+
+00:59:15.284 --> 00:59:20.495
+where there are some optimal values
+of phi in each data point and
+
+00:59:20.495 --> 00:59:22.875
+f perfectly predicts that.
+
+00:59:22.875 --> 00:59:24.792
+That is the best thing it can do and
+
+00:59:24.792 --> 00:59:27.886
+that's why it's a smaller
+class than the original.
+
+00:59:31.060 --> 00:59:33.482
+So, let's look at
+an example of issues.
+
+00:59:33.482 --> 00:59:38.430
+So, there's a popular model called
+the variational autoencoder.
+
+00:59:38.430 --> 00:59:41.445
+What is does from
+the generative standpoint,
+
+00:59:41.445 --> 00:59:44.706
+it puts a prior over a vector
+of random variables.
+
+00:59:44.706 --> 00:59:47.718
+That's simple,
+it's just normal zero, one.
+
+00:59:47.718 --> 00:59:52.616
+And it generates the data with say,
+a normal distribution with functions
+
+00:59:52.616 --> 00:59:56.013
+that are parameterized by
+the global variables and
+
+00:59:56.013 --> 00:59:58.620
+taken as input
+the locally variable and
+
+00:59:58.620 --> 01:00:02.897
+both these functions are generally
+some form of deep networks.
+
+01:00:05.842 --> 01:00:09.940
+To do inference in this,
+we use our inference network.
+
+01:00:09.940 --> 01:00:14.829
+So we specify a mean-field
+approximation where
+
+01:00:14.829 --> 01:00:20.314
+the parameters of that
+approximation, in this case,
+
+01:00:20.314 --> 01:00:26.050
+normal distribution,
+come from functions of the data.
+
+01:00:26.050 --> 01:00:29.000
+So we have a mean parameter
+coming from the data and
+
+01:00:29.000 --> 01:00:30.660
+we have a variance parameter
+coming from the data.
+
+01:00:31.800 --> 01:00:36.510
+And the picture on the left
+really describes this process.
+
+01:00:36.510 --> 01:00:41.040
+So the model is generative in the
+sense that you take latent variable,
+
+01:00:41.040 --> 01:00:44.460
+you pass it through
+a set of deep functions.
+
+01:00:44.460 --> 01:00:46.618
+And then, you have a likelihood
+function where you can sample data.
+
+01:00:46.618 --> 01:00:51.120
+And on inference this
+process is reversed.
+
+01:00:51.120 --> 01:00:56.620
+We take data, we pass it
+through these two deep networks
+
+01:00:56.620 --> 01:01:00.280
+to get parameters for
+the variational approximators and
+
+01:01:00.280 --> 01:01:07.338
+that's the distribution up here And
+this really works, so here's
+
+01:01:07.338 --> 01:01:12.040
+some results that are produced
+by variational autoencoders.
+
+01:01:12.040 --> 01:01:15.400
+The top just is a measure
+of model fitness.
+
+01:01:15.400 --> 01:01:18.670
+And the variational
+autoencoder does well.
+
+01:01:18.670 --> 01:01:23.390
+And these other pictures are,
+we have some simulation results.
+
+01:01:23.390 --> 01:01:30.250
+You know how well can you generate
+for faces or house numbers.
+
+01:01:30.250 --> 01:01:35.590
+And the last one is a different task
+where we have our original data.
+
+01:01:36.700 --> 01:01:41.340
+We have corrupted that data so
+this is what the model sees.
+
+01:01:41.340 --> 01:01:43.870
+And we tried to do
+inference to recover
+
+01:01:43.870 --> 01:01:46.940
+the original values based
+on what the model thinks.
+
+01:01:46.940 --> 01:01:49.020
+And this is just a postulate
+calculation also.
+
+01:01:52.570 --> 01:01:54.820
+So in the last part of my segment,
+
+01:01:54.820 --> 01:01:57.060
+I'm gonna go over
+some rules of thumb.
+
+01:01:58.200 --> 01:02:01.160
+And the first rules of thumb, I
+think that are important are how to
+
+01:02:01.160 --> 01:02:03.059
+choose between these two
+kinds of estimators.
+
+01:02:04.720 --> 01:02:08.960
+If your model is differentiable, I
+think the first thing you do is try
+
+01:02:08.960 --> 01:02:12.000
+out a variational approximation
+that's reparameterizable.
+
+01:02:12.000 --> 01:02:16.880
+And that's because, variance is
+an issue in the other case and
+
+01:02:16.880 --> 01:02:20.580
+it's pretty well behaved for
+this estimator.
+
+01:02:20.580 --> 01:02:24.540
+If your model is not differentiable,
+the process is a little bit slower.
+
+01:02:24.540 --> 01:02:26.430
+You're gonna use the score
+function estimator,
+
+01:02:26.430 --> 01:02:27.880
+because that's all you can use.
+
+01:02:27.880 --> 01:02:29.800
+And you should use it with
+the control variates right away.
+
+01:02:31.430 --> 01:02:34.670
+But I think you'll also have
+to add further variance
+
+01:02:34.670 --> 01:02:37.240
+reductions based on
+experimental evidence.
+
+01:02:37.240 --> 01:02:40.230
+What I mean by that is
+you'll plot your evidence.
+
+01:02:40.230 --> 01:02:41.360
+You'll plot the variance
+of the gradients,
+
+01:02:41.360 --> 01:02:42.940
+you'll see how much
+progress you're making.
+
+01:02:42.940 --> 01:02:45.440
+If you're making too little
+progress, you'll probably have to
+
+01:02:45.440 --> 01:02:47.600
+adapt one of the other techniques
+that I listed earlier.
+
+01:02:47.600 --> 01:02:52.790
+And there's some more general advice
+I think that is important for
+
+01:02:52.790 --> 01:02:54.560
+optimizing these problems, too.
+
+01:02:54.560 --> 01:02:57.730
+Which is, don't use
+the Robbins-Monro sequences,
+
+01:02:57.730 --> 01:02:59.570
+use something like RMSProp and
+
+01:02:59.570 --> 01:03:04.240
+AdaGrad, which do coordinate
+specific learning rates.
+
+01:03:04.240 --> 01:03:06.820
+There's something
+called annealing which
+
+01:03:06.820 --> 01:03:10.850
+bounces the cause between
+the regularization term the entropy
+
+01:03:10.850 --> 01:03:12.870
+that they talked about
+in the likelihood,
+
+01:03:12.870 --> 01:03:16.350
+which can help getting stock
+in local optimal early on.
+
+01:03:16.350 --> 01:03:20.010
+And from a conversational stand
+points, the algorithms we describe
+
+01:03:20.010 --> 01:03:23.230
+there really embarrassingly
+parallel across samples.
+
+01:03:23.230 --> 01:03:26.430
+And so, implementing it that way can
+
+01:03:26.430 --> 01:03:28.610
+make the entire inference
+process much faster.
+
+01:03:31.300 --> 01:03:32.060
+For software,
+
+01:03:33.130 --> 01:03:37.280
+there are two different kinds
+of systems that are useful here.
+
+01:03:37.280 --> 01:03:40.680
+The first kind of system are systems
+that have variational inference
+
+01:03:40.680 --> 01:03:43.040
+built into it and these are
+probabilistic for any languages and
+
+01:03:43.040 --> 01:03:44.950
+there are a lot of them.
+
+01:03:44.950 --> 01:03:48.780
+There's Venture,
+WebPPL, Edward, PyMC3.
+
+01:03:50.050 --> 01:03:51.990
+And what these are really good for,
+they're good for
+
+01:03:51.990 --> 01:03:54.950
+trying out just a broad
+class of models.
+
+01:03:56.340 --> 01:04:00.070
+The second set of tools
+are just math libraries.
+
+01:04:00.070 --> 01:04:04.010
+They let you do differentiation,
+they provide other utilities,
+
+01:04:04.010 --> 01:04:05.950
+maybe like log probabilities.
+
+01:04:05.950 --> 01:04:07.538
+And what they're useful for
+
+01:04:07.538 --> 01:04:11.573
+is getting a faster implementation
+of an individual model, because you
+
+01:04:11.573 --> 01:04:15.558
+can take advantage of structure in
+that model in your implementation.
+
+01:04:15.558 --> 01:04:18.331
+And thanks.
+
+01:04:18.331 --> 01:04:24.326
+>> [APPLAUSE]
+>> And
+
+01:04:24.326 --> 01:04:27.343
+I'd like to take you through a bit
+more of the more recent work
+
+01:04:27.343 --> 01:04:31.570
+that's happened in variational
+inference in the past few years.
+
+01:04:31.570 --> 01:04:33.120
+And to get to this point,
+
+01:04:33.120 --> 01:04:36.070
+we've needed a number of
+different ingredients.
+
+01:04:36.070 --> 01:04:40.970
+And we began with Dave, who
+introduced us to the principles of
+
+01:04:40.970 --> 01:04:45.100
+probabilistic modelling, the
+principles of variational inference.
+
+01:04:45.100 --> 01:04:48.050
+And how we can really scale
+our models using stochastic
+
+01:04:48.050 --> 01:04:48.810
+optimisation.
+
+01:04:49.910 --> 01:04:53.240
+And Rajesh just introduced as to
+black-box variational inference
+
+01:04:53.240 --> 01:04:57.790
+methods and how we can automate the
+process of variational inference.
+
+01:04:57.790 --> 01:05:01.620
+How we can extend them to
+non-conjugate models, use
+
+01:05:01.620 --> 01:05:05.149
+Monte Carlo gradients estimators and
+use amortized variational inference.
+
+01:05:06.770 --> 01:05:10.120
+And without us knowing it,
+we have now been empowered
+
+01:05:10.120 --> 01:05:13.750
+to answer one of the key questions
+in variational inference.
+
+01:05:13.750 --> 01:05:16.530
+Which is how do you
+choose that variable q?
+
+01:05:16.530 --> 01:05:19.640
+How can you get the best
+distribution possible?
+
+01:05:19.640 --> 01:05:21.220
+And sort of for the next 30 minutes,
+
+01:05:21.220 --> 01:05:23.169
+we're just gonna explore
+different ways of doing that.
+
+01:05:24.230 --> 01:05:28.030
+So this was the variational
+inference picture that we
+
+01:05:28.030 --> 01:05:29.680
+showed in the beginning.
+
+01:05:29.680 --> 01:05:33.530
+You need to find the best
+approximation to the true posterior
+
+01:05:33.530 --> 01:05:36.760
+distribution, p of z given x.
+
+01:05:36.760 --> 01:05:40.370
+And what we needed to do was specify
+some family of distributions
+
+01:05:40.370 --> 01:05:44.020
+which we called q, what some
+variational parameters knew.
+
+01:05:44.020 --> 01:05:45.184
+And up to this point,
+
+01:05:45.184 --> 01:05:48.809
+everything that we need was called
+the mean field approximation or
+
+01:05:48.809 --> 01:05:53.000
+what would sometimes called
+the fully factorized approximation.
+
+01:05:53.000 --> 01:05:55.170
+So in my little cartoon image here,
+
+01:05:55.170 --> 01:05:58.370
+we have three dimensions
+of a latent variable Zed.
+
+01:05:58.370 --> 01:06:01.860
+And the latent variables have
+no connections between them.
+
+01:06:01.860 --> 01:06:05.140
+So we assume they are independent
+Gaussians for example.
+
+01:06:05.140 --> 01:06:06.810
+And once we make that assumption,
+
+01:06:06.810 --> 01:06:09.690
+we can then optimize
+our variation low bound
+
+01:06:09.690 --> 01:06:14.250
+using the Monte Carlo techniques
+that Rajesh just described.
+
+01:06:14.250 --> 01:06:18.650
+And so, the question is,
+is this a good idea?
+
+01:06:18.650 --> 01:06:21.280
+So the way we'll do that is
+by exploring some real world
+
+01:06:21.280 --> 01:06:22.740
+posteriors.
+
+01:06:22.740 --> 01:06:26.940
+So, Rajesh just described to you
+what was this model, a deep latent
+
+01:06:26.940 --> 01:06:31.480
+Gaussian model, it consists of
+a latent variable of Gaussian.
+
+01:06:31.480 --> 01:06:33.770
+And then it goes through
+some deep network and
+
+01:06:33.770 --> 01:06:37.440
+the example we're looking at is
+a two fully connected hinted layer.
+
+01:06:37.440 --> 01:06:40.270
+And then we have modelling MS
+digits where we'll use the newly
+
+01:06:40.270 --> 01:06:41.350
+distribution at the end.
+
+01:06:42.600 --> 01:06:45.660
+And these two plots are a plot for
+one of these digits.
+
+01:06:45.660 --> 01:06:47.880
+It's number five in this case and
+
+01:06:47.880 --> 01:06:50.650
+we're looking at the true posterior
+distribution, which is the grey.
+
+01:06:50.650 --> 01:06:51.880
+And there are two plots,
+
+01:06:51.880 --> 01:06:55.490
+it's the same posterior distribution
+at different zoom levels.
+
+01:06:55.490 --> 01:06:58.260
+And so there are some interesting
+things to look at and to
+
+01:06:58.260 --> 01:07:02.540
+learn from this plot already, just
+in two dimensional latent variables.
+
+01:07:02.540 --> 01:07:06.650
+One is that this posterior
+looks like Gaussian, so
+
+01:07:06.650 --> 01:07:11.200
+a Gaussian could do quite well, but
+it has a slight bit of correlation.
+
+01:07:11.200 --> 01:07:14.930
+There's a little bit of a tilt in
+that grey contour at the back,
+
+01:07:14.930 --> 01:07:17.300
+ignore the blue curve.
+
+01:07:17.300 --> 01:07:19.220
+If we use the mean
+field approximation,
+
+01:07:19.220 --> 01:07:22.780
+then we will only have axis-aligned
+Gaussian, which means we will never
+
+01:07:22.780 --> 01:07:26.160
+be able to model even that
+small amount of correlation.
+
+01:07:26.160 --> 01:07:30.030
+So a conclusion already from simple
+kind of plots like this is that
+
+01:07:30.030 --> 01:07:31.050
+the mean-field or
+
+01:07:31.050 --> 01:07:35.210
+fully factorized assumption
+usually will not be sufficient.
+
+01:07:35.210 --> 01:07:36.800
+So let's look at
+a few other diagrams.
+
+01:07:36.800 --> 01:07:39.440
+So here are a few
+other of the digits.
+
+01:07:39.440 --> 01:07:43.720
+There are four plots, and
+each of them has four sub-plots.
+
+01:07:43.720 --> 01:07:45.310
+But they're all, again,
+
+01:07:45.310 --> 01:07:48.090
+the same posterior distribution
+at different zoom levels.
+
+01:07:48.090 --> 01:07:51.920
+And we're gonna look, focus on
+the gray contours in the end.
+
+01:07:51.920 --> 01:07:54.380
+And we see a lot of interesting
+things in the first one,
+
+01:07:54.380 --> 01:07:56.570
+there can be very strong dependency,
+
+01:07:56.570 --> 01:07:59.510
+strong correlation between
+the distributions.
+
+01:07:59.510 --> 01:08:02.160
+Sort of in the second one,
+the distributions can
+
+01:08:02.160 --> 01:08:05.720
+look somewhat spherical but
+they aren't quite Gaussian.
+
+01:08:05.720 --> 01:08:08.290
+In the third one you have
+distributions that are somewhat
+
+01:08:08.290 --> 01:08:12.690
+multi modal with some way
+density connecting the two
+
+01:08:12.690 --> 01:08:13.960
+parts of the mode.
+
+01:08:13.960 --> 01:08:17.270
+And in the other part you can have
+some very heavy tail with very sharp
+
+01:08:17.270 --> 01:08:18.380
+cut offs.
+
+01:08:18.380 --> 01:08:19.040
+And so
+
+01:08:19.040 --> 01:08:22.570
+from here we take the lesson that
+the kind of posterior distributions
+
+01:08:22.570 --> 01:08:26.047
+that we see in the real world
+have complex dependencies.
+
+01:08:26.047 --> 01:08:30.900
+They're typically non-Gaussian and
+they might have multiple modes.
+
+01:08:30.900 --> 01:08:32.380
+And these are the three kinds of
+
+01:08:32.380 --> 01:08:33.770
+things that we're
+gonna try to look for.
+
+01:08:35.070 --> 01:08:39.440
+So this means that we're gonna
+have two high-level goals.
+
+01:08:39.440 --> 01:08:42.850
+We wanna build to these very
+rich posterior distributions.
+
+01:08:42.850 --> 01:08:46.850
+Distributions that are non-Gaussian,
+can have complex dependencies and
+
+01:08:46.850 --> 01:08:48.320
+can be multimodal.
+
+01:08:48.320 --> 01:08:50.990
+But at the same time, everything
+that we that we just learned from
+
+01:08:50.990 --> 01:08:54.690
+Rajesh and Dave about maintaining
+computational complexity,
+
+01:08:54.690 --> 01:08:57.410
+we need to keep that and
+scalability.
+
+01:08:57.410 --> 01:09:01.520
+So, that sort of means that
+what we have is a spectrum
+
+01:09:01.520 --> 01:09:02.660
+of different approaches.
+
+01:09:02.660 --> 01:09:05.930
+On one end, we have the true
+posterior distribution, which is
+
+01:09:05.930 --> 01:09:10.510
+the best thing we can do but the
+true posterior is unavailable to us.
+
+01:09:10.510 --> 01:09:14.060
+And on the other end we have
+the mean-field approximation
+
+01:09:14.060 --> 01:09:17.320
+which is the least expressive,
+the simplest thing we could do.
+
+01:09:17.320 --> 01:09:22.430
+And in between, there lies a whole
+range of ideas that we can explore.
+
+01:09:22.430 --> 01:09:25.760
+And everything you know
+about building models
+
+01:09:25.760 --> 01:09:27.390
+can now be applied here.
+
+01:09:27.390 --> 01:09:30.390
+Cuz the process and
+the problem of designing good
+
+01:09:30.390 --> 01:09:34.480
+posterior approximations is
+going to be exactly the same as
+
+01:09:34.480 --> 01:09:37.380
+the way we think about
+building models themselves.
+
+01:09:37.380 --> 01:09:41.160
+And everything we know we're going
+to use in somewhat different way.
+
+01:09:41.160 --> 01:09:45.663
+So the first way to think about this
+is how can you improve your fully
+
+01:09:45.663 --> 01:09:49.698
+factorized approximation and
+introduce some structure.
+
+01:09:49.698 --> 01:09:52.524
+So, this would call
+the structured mean field, and
+
+01:09:52.524 --> 01:09:56.315
+in the example that I have, instead
+of having no dependencies between
+
+01:09:56.315 --> 01:09:59.100
+the individual dimensions
+of the later variable.
+
+01:09:59.100 --> 01:10:03.860
+I'll have a dependency between
+z1 and z2, and z2 and z3.
+
+01:10:03.860 --> 01:10:08.082
+So a structured mean field is any
+kind of posterior approximation,
+
+01:10:08.082 --> 01:10:12.537
+where we introduce some form of
+dependency within the approximation.
+
+01:10:12.537 --> 01:10:13.999
+And this can be very general.
+
+01:10:16.257 --> 01:10:20.550
+So the first and simplest way
+of introducing some dependency
+
+01:10:20.550 --> 01:10:25.610
+is to improve that diagonal
+Gaussian approximation that we use.
+
+01:10:25.610 --> 01:10:28.330
+And that means we'll just
+use a correlated Gaussian.
+
+01:10:28.330 --> 01:10:31.310
+A correlated Gaussian is
+a distribution with some variational
+
+01:10:31.310 --> 01:10:34.650
+parameters mu, and these variational
+parameters are the mean and
+
+01:10:34.650 --> 01:10:36.420
+the variance of that Gaussian.
+
+01:10:36.420 --> 01:10:40.620
+And now all the dependency structure
+lives within the covariance.
+
+01:10:40.620 --> 01:10:43.500
+And so we can think about
+different covariance models
+
+01:10:43.500 --> 01:10:44.910
+that we have available.
+
+01:10:44.910 --> 01:10:48.080
+And the things we can do is start
+with the mean field, which includes
+
+01:10:48.080 --> 01:10:52.330
+the diagonal Gaussian or
+we can add a rank one term to that,
+
+01:10:52.330 --> 01:10:56.030
+which will allow us to capture
+one degree of correlation.
+
+01:10:56.030 --> 01:11:00.380
+Or we can continue to add a few
+more dimensions of higher rank
+
+01:11:00.380 --> 01:11:02.760
+up until we reach the focal
+variance Gaussian.
+
+01:11:03.870 --> 01:11:07.020
+And so this is a little plot just
+to give you an indication of,
+
+01:11:07.020 --> 01:11:11.150
+what can happen by building better
+models and using better inference.
+
+01:11:11.150 --> 01:11:14.490
+So the highest plot
+is factor analysis.
+
+01:11:14.490 --> 01:11:17.960
+The simplest model, it is
+a linear latent Gaussian model,
+
+01:11:17.960 --> 01:11:20.710
+with a factorized
+posterior distribution.
+
+01:11:20.710 --> 01:11:22.960
+You get some value
+which is quite high.
+
+01:11:22.960 --> 01:11:25.340
+And once we move to
+a nonlinear model,
+
+01:11:25.340 --> 01:11:29.020
+nonlinear models can be much more
+powerful and we can make significant
+
+01:11:29.020 --> 01:11:32.740
+gains in our understanding and
+explanation of the data.
+
+01:11:32.740 --> 01:11:34.830
+But using the wake-sleep algorithm
+
+01:11:35.870 --> 01:11:38.290
+doesn't use a very
+unified objective.
+
+01:11:38.290 --> 01:11:40.420
+If we use variational inference,
+
+01:11:40.420 --> 01:11:43.700
+that gives us the principles we
+are deriving a unified objective
+
+01:11:43.700 --> 01:11:47.170
+function, even with the mean
+field we can still do better.
+
+01:11:47.170 --> 01:11:50.780
+And if we do a Rank-1 approximation,
+we can do better still.
+
+01:11:50.780 --> 01:11:54.370
+And so this is sort of the lesson
+of building better posterior
+
+01:11:54.370 --> 01:11:55.840
+distributions.
+
+01:11:55.840 --> 01:11:58.980
+There are two limitations
+of this kind of thinking.
+
+01:11:58.980 --> 01:12:03.180
+One is that, as we move from
+the mean-field to rank 1,
+
+01:12:03.180 --> 01:12:05.130
+we have a linear time computation.
+
+01:12:05.130 --> 01:12:08.426
+It is linear in the number of
+latent variables that we have.
+
+01:12:08.426 --> 01:12:11.712
+But once you move to these higher
+order approximation covariance
+
+01:12:11.712 --> 01:12:15.233
+models, we move from something that
+was linear in the number of latent
+
+01:12:15.233 --> 01:12:18.892
+variables to something that is cubic
+in the number of latent variables.
+
+01:12:18.892 --> 01:12:22.254
+And this cubic cost is something
+that will not be acceptable to us.
+
+01:12:22.254 --> 01:12:24.984
+So we cannot actually
+use this model.
+
+01:12:24.984 --> 01:12:29.143
+The other limitation is that these
+posteriors will always be Gaussian.
+
+01:12:29.143 --> 01:12:31.981
+And this is one of the things
+that we did not want to have.
+
+01:12:31.981 --> 01:12:33.540
+So what can we do better?
+
+01:12:33.540 --> 01:12:35.800
+So to move beyond the Gaussian,
+
+01:12:35.800 --> 01:12:39.310
+the simplest thing to do is to use
+one of the first models you probably
+
+01:12:39.310 --> 01:12:42.730
+ever learned about, which was
+the non-linear autoregressive model.
+
+01:12:42.730 --> 01:12:45.745
+And we can use that to build
+posterior distributions.
+
+01:12:45.745 --> 01:12:48.835
+So in this example,
+let's look at dimension z4.
+
+01:12:48.835 --> 01:12:53.416
+z4 is dependent on all the other
+latent variables that came
+
+01:12:53.416 --> 01:12:56.830
+before it, z3, z2, and z1.
+
+01:12:56.830 --> 01:12:59.700
+We introduce an ordering
+on these latent variables.
+
+01:12:59.700 --> 01:13:02.900
+And each of these
+connections between z4 can,
+
+01:13:02.900 --> 01:13:05.210
+in this case,
+be a deep neural network.
+
+01:13:05.210 --> 01:13:07.920
+So this can be very flexible.
+
+01:13:07.920 --> 01:13:10.980
+Each of the conditional
+distributions will be Gaussian, but
+
+01:13:10.980 --> 01:13:14.390
+the joint distribution between
+all of them is most certainly not
+
+01:13:14.390 --> 01:13:15.080
+a Gaussian.
+
+01:13:15.080 --> 01:13:17.199
+So this can be a very
+good approximation.
+
+01:13:18.280 --> 01:13:22.460
+So to give you an idea of exactly
+what can be done, on the bar plot,
+
+01:13:22.460 --> 01:13:25.051
+these are results on
+the M list data set.
+
+01:13:25.051 --> 01:13:28.170
+So in the VAE algorithm
+that we looked at before,
+
+01:13:28.170 --> 01:13:32.367
+using a mean field approximation,
+we can get around 86 knots.
+
+01:13:32.367 --> 01:13:34.200
+This is a really good number.
+
+01:13:34.200 --> 01:13:36.300
+But when we use the best model and
+
+01:13:36.300 --> 01:13:40.900
+we use this kind of non-linear
+autoregressive posterior that can
+
+01:13:40.900 --> 01:13:44.940
+induce these complex dependencies,
+we can gain five knots.
+
+01:13:44.940 --> 01:13:47.860
+I don't think I can explain to
+how much five knots is, but
+
+01:13:47.860 --> 01:13:49.560
+that's a lot.
+
+01:13:49.560 --> 01:13:52.851
+And if we look at sort of
+the samples that we can generate,
+
+01:13:52.851 --> 01:13:56.556
+you can see from something very
+blurry from in the VAE, we now get
+
+01:13:56.556 --> 01:14:00.547
+much more structure, diversity of
+colors and a bit more coherence.
+
+01:14:00.547 --> 01:14:02.593
+They're not perfect images,
+of course, and
+
+01:14:02.593 --> 01:14:04.804
+the most modern work can
+do much better than this.
+
+01:14:04.804 --> 01:14:08.567
+But this is sort of
+the understanding of what better
+
+01:14:08.567 --> 01:14:09.976
+posteriors mean.
+
+01:14:09.976 --> 01:14:13.489
+Again I said the joint
+distribution is non-Gaussian.
+
+01:14:13.489 --> 01:14:17.657
+And because of this autoregressive
+structure, this maintains
+
+01:14:17.657 --> 01:14:22.750
+the complexity which is linear in
+the number of latent variables.
+
+01:14:22.750 --> 01:14:23.920
+So we can move beyond that.
+
+01:14:23.920 --> 01:14:27.991
+So since we can use the non-linear
+autoregressive model, what other
+
+01:14:27.991 --> 01:14:32.137
+models can we use as potential
+approximate posterior distributions?
+
+01:14:32.137 --> 01:14:35.848
+One popular approach might
+be to use a mixture model,
+
+01:14:35.848 --> 01:14:37.671
+which is a very good idea.
+
+01:14:37.671 --> 01:14:40.785
+Or we can start with the mean
+field approximation and
+
+01:14:40.785 --> 01:14:43.278
+we can use some form
+of binding function.
+
+01:14:43.278 --> 01:14:46.891
+For example, this function C to
+introduce some dependencies.
+
+01:14:46.891 --> 01:14:49.884
+And if you look at all
+the models that you will use and
+
+01:14:49.884 --> 01:14:53.992
+think about ways of building these
+better posterior distributions,
+
+01:14:53.992 --> 01:14:55.330
+a recipe will emerge.
+
+01:14:55.330 --> 01:14:59.656
+And what it suggests to us is that
+we should try to introduce some new
+
+01:14:59.656 --> 01:15:02.140
+variables into our approximations.
+
+01:15:02.140 --> 01:15:06.360
+And we'll use these new variables
+in some way to induce dependencies.
+
+01:15:06.360 --> 01:15:08.855
+And every new variable
+that we introduce,
+
+01:15:08.855 --> 01:15:12.736
+we'll have to think about ways to
+make sure that the approximation
+
+01:15:12.736 --> 01:15:14.827
+is still tractable and efficient.
+
+01:15:14.827 --> 01:15:19.545
+And so we're going to look at
+exploring this in much more detail.
+
+01:15:19.545 --> 01:15:22.360
+So here's the general recipe for
+the rest of this part.
+
+01:15:22.360 --> 01:15:26.590
+Is we're going to introduce some new
+variables, and I'll call them omega.
+
+01:15:26.590 --> 01:15:28.322
+These new variables
+are going to help us.
+
+01:15:28.322 --> 01:15:31.741
+They are going to be something we
+can play around to actually build
+
+01:15:31.741 --> 01:15:33.365
+a much richer approximation.
+
+01:15:33.365 --> 01:15:37.432
+So while we might be interested
+in this distribution queue of z
+
+01:15:37.432 --> 01:15:41.968
+given mu, we're going to form this
+new joint distribution, q of z,
+
+01:15:41.968 --> 01:15:43.960
+comma omega given u.
+
+01:15:43.960 --> 01:15:46.100
+We should go the integral but
+we're gonna try and
+
+01:15:46.100 --> 01:15:51.370
+work with the joint instead, which
+will help us do the tractability.
+
+01:15:52.400 --> 01:15:54.500
+So because we're gonna
+now work with this joint,
+
+01:15:54.500 --> 01:15:58.090
+the bound that we already had might
+not actually work, and we'll have to
+
+01:15:58.090 --> 01:16:02.130
+think about how we can actually
+modify our bound in some way.
+
+01:16:02.130 --> 01:16:05.330
+Usually this likelihood term
+will be okay to handle, but
+
+01:16:05.330 --> 01:16:07.710
+the entropy term will be
+something difficult, and
+
+01:16:07.710 --> 01:16:10.440
+that's one of the things we'll
+think about quite a bit.
+
+01:16:10.440 --> 01:16:13.848
+And at all points, we'll always be
+thinking about the computation,
+
+01:16:13.848 --> 01:16:16.447
+what it actually means,
+what the implications, and
+
+01:16:16.447 --> 01:16:19.529
+to ensure that we are linear in
+the number of latent variables.
+
+01:16:21.271 --> 01:16:24.060
+So there are two general approaches
+that we're gonna look at.
+
+01:16:24.060 --> 01:16:26.538
+One approach will be the change
+of variables method.
+
+01:16:26.538 --> 01:16:29.910
+I'm gonna explore some techniques
+on the various different names.
+
+01:16:29.910 --> 01:16:33.430
+Like normalizing flows, and look at
+how invertible transformations and
+
+01:16:33.430 --> 01:16:35.880
+functions can play a role here.
+
+01:16:35.880 --> 01:16:38.940
+And the other approach will be
+called auxiliary variable methods,
+
+01:16:38.940 --> 01:16:41.560
+and we'll look at ways of
+building entropy bounds,
+
+01:16:41.560 --> 01:16:43.540
+and using other ways of
+Monte Carlo sampling.
+
+01:16:45.090 --> 01:16:49.300
+So the first way are these change of
+variable methods, and this is also
+
+01:16:49.300 --> 01:16:52.870
+one of the first things you learned
+in introductory probability, which
+
+01:16:52.870 --> 01:16:56.450
+was the rule for change of variables
+of a probability distribution.
+
+01:16:56.450 --> 01:16:59.780
+So we can start with
+a simple distribution, q0,
+
+01:16:59.780 --> 01:17:01.880
+assume it's a Gaussian, for example.
+
+01:17:01.880 --> 01:17:04.600
+And if we take samples from
+their distribution, and
+
+01:17:04.600 --> 01:17:07.780
+we transform them through
+some invertible function,
+
+01:17:07.780 --> 01:17:10.460
+then we can know
+the distribution at the end.
+
+01:17:10.460 --> 01:17:12.960
+Because we can apply the rule for
+change of variables.
+
+01:17:12.960 --> 01:17:16.090
+Which will involve taking
+the original distribution and
+
+01:17:16.090 --> 01:17:18.967
+multiplying it by
+the determinant of its Jacobean.
+
+01:17:18.967 --> 01:17:21.540
+So here's the cartoon
+that gives us that image.
+
+01:17:21.540 --> 01:17:24.896
+We started this distribution
+q0 which is a Gaussian.
+
+01:17:24.896 --> 01:17:28.620
+And we transform it through
+this nonlinear function f.
+
+01:17:28.620 --> 01:17:31.720
+The function f must be invertible.
+
+01:17:31.720 --> 01:17:34.460
+But once we get to the end,
+that function will transform
+
+01:17:34.460 --> 01:17:37.350
+the density and give us something
+a bit more complicated.
+
+01:17:37.350 --> 01:17:39.590
+And we can do this multiple times.
+
+01:17:39.590 --> 01:17:43.290
+We can apply as many functions
+as we like to try and
+
+01:17:43.290 --> 01:17:46.520
+make the distribution as
+complicated as we need to be.
+
+01:17:46.520 --> 01:17:48.400
+And there are two
+important properties
+
+01:17:48.400 --> 01:17:50.120
+of this kind of a process.
+
+01:17:50.120 --> 01:17:52.840
+The first one is that
+sampling is very easy.
+
+01:17:52.840 --> 01:17:55.900
+That if we need to generate a sample
+from the final distribution
+
+01:17:55.900 --> 01:18:00.390
+at time step t, we generate a sample
+from our independent Gaussian and
+
+01:18:00.390 --> 01:18:03.260
+we just push those samples through
+the sequence of functions.
+
+01:18:03.260 --> 01:18:06.790
+And what comes out at the end will
+be a sample from this complicated
+
+01:18:06.790 --> 01:18:07.820
+distribution.
+
+01:18:07.820 --> 01:18:13.100
+And that sample is what we need to
+do the optimization that described.
+
+01:18:13.100 --> 01:18:15.740
+The second thing that we need
+to do is to be able to compute
+
+01:18:15.740 --> 01:18:18.810
+the entropy, this term that
+was always in our bound.
+
+01:18:18.810 --> 01:18:21.895
+And the entropy is also
+very easy to compute,
+
+01:18:21.895 --> 01:18:26.046
+because we just need to take
+the log of this transformation.
+
+01:18:26.046 --> 01:18:29.427
+So it'll just be the log of the
+initial distribution which we always
+
+01:18:29.427 --> 01:18:32.690
+know, and the log determinant of
+the Jacobean which we can always
+
+01:18:32.690 --> 01:18:35.562
+compute, because we get to
+this design this function f.
+
+01:18:35.562 --> 01:18:37.907
+And so
+we call this a normalizing flow,
+
+01:18:37.907 --> 01:18:41.179
+because this initial
+distribution flows through this
+
+01:18:41.179 --> 01:18:43.738
+sequence of distributions
+at the end, and
+
+01:18:43.738 --> 01:18:47.882
+this can be one of the very powerful
+ways of building distributions.
+
+01:18:47.882 --> 01:18:51.231
+So I wanna give to you an intuition
+for what exactly this means.
+
+01:18:51.231 --> 01:18:54.208
+So in the first column,
+we have two distributions.
+
+01:18:54.208 --> 01:18:58.350
+It's either a spherical Gaussian or
+a uniform distribution.
+
+01:18:58.350 --> 01:19:01.040
+And I've chosen one particular
+kind of simple function with
+
+01:19:01.040 --> 01:19:02.390
+random parameters.
+
+01:19:02.390 --> 01:19:04.560
+And we're gonna look at what
+different kinds of these
+
+01:19:04.560 --> 01:19:06.140
+transformations means.
+
+01:19:06.140 --> 01:19:08.810
+And every time you do
+one transformation,
+
+01:19:08.810 --> 01:19:12.350
+you can do a number of operations
+on the initial density.
+
+01:19:12.350 --> 01:19:15.910
+You can contract the density,
+as happens in the first row for
+
+01:19:15.910 --> 01:19:17.070
+the Gaussian.
+
+01:19:17.070 --> 01:19:21.780
+You can expand the density, which
+happens after two transformations,
+
+01:19:21.780 --> 01:19:24.000
+which allows us then
+to be multimodal.
+
+01:19:24.000 --> 01:19:26.040
+And after you do ten of
+these transformations,
+
+01:19:26.040 --> 01:19:28.810
+you have something very
+complicated multimodal.
+
+01:19:28.810 --> 01:19:30.690
+There's lots of structure,
+
+01:19:30.690 --> 01:19:34.030
+lots of different density mass
+allocated in different ways.
+
+01:19:34.030 --> 01:19:37.620
+And the same thing for the uniform,
+which actually this then,
+
+01:19:37.620 --> 01:19:41.320
+these final distributions meet all
+the requirements we want it to have.
+
+01:19:41.320 --> 01:19:45.461
+There's complex dependencies,
+there's multi-modality and
+
+01:19:45.461 --> 01:19:46.830
+non-Gaussianity.
+
+01:19:46.830 --> 01:19:51.810
+So some actual real functions,
+here's four examples.
+
+01:19:51.810 --> 01:19:52.799
+Let's look at the first column.
+
+01:19:52.799 --> 01:19:55.308
+We have these two half moons.
+
+01:19:55.308 --> 01:19:58.414
+After you do two normalizing
+flows and two transformations,
+
+01:19:58.414 --> 01:20:01.280
+Then you see we've already been
+able to learn the mean and
+
+01:20:01.280 --> 01:20:04.530
+we've already know there
+are two different modes.
+
+01:20:04.530 --> 01:20:08.470
+And we can apply as many of these
+functions as we need to apply and
+
+01:20:08.470 --> 01:20:12.220
+by K = 32,
+we very well characterized and
+
+01:20:12.220 --> 01:20:15.390
+been able to learn
+the true distribution.
+
+01:20:15.390 --> 01:20:19.940
+And I think this image gives you
+a different way of thinking about
+
+01:20:19.940 --> 01:20:23.140
+what it means to build a richer
+posterior distribution.
+
+01:20:23.140 --> 01:20:26.080
+Another way to think
+about it is to say
+
+01:20:26.080 --> 01:20:29.220
+what can I do if I
+had more computation?
+
+01:20:29.220 --> 01:20:33.370
+Can I allow my system given
+more computation to learn and
+
+01:20:33.370 --> 01:20:34.580
+to become better?
+
+01:20:34.580 --> 01:20:37.580
+And this is sort of a theme you'll
+see in many of the conferences and
+
+01:20:37.580 --> 01:20:39.020
+talks throughout the workshop.
+
+01:20:39.020 --> 01:20:41.890
+Especially in the deep learning
+about how we can use adaptive
+
+01:20:41.890 --> 01:20:45.410
+computation and apply it on
+the fly to learn richer things and
+
+01:20:45.410 --> 01:20:47.140
+in this case posterior distribution.
+
+01:20:48.370 --> 01:20:51.210
+So, the key question then is.
+
+01:20:51.210 --> 01:20:53.580
+How do you choose this function F?
+
+01:20:53.580 --> 01:20:57.700
+We can't use any function because
+we need the function to maintain.
+
+01:20:57.700 --> 01:20:59.040
+It must be invertible and
+
+01:20:59.040 --> 01:21:01.450
+the function needs to allow
+us to learn in linear time.
+
+01:21:03.020 --> 01:21:05.550
+So the bond is easy to adapt because
+
+01:21:05.550 --> 01:21:07.370
+initially we can complete
+the initial term,
+
+01:21:07.370 --> 01:21:11.130
+which is just the expectation
+of the factorized Gaussian.
+
+01:21:11.130 --> 01:21:15.080
+And this log determinant term
+is also easy to compute.
+
+01:21:16.680 --> 01:21:20.610
+So we'll always start
+with a simple Gaussian.
+
+01:21:20.610 --> 01:21:23.410
+And there are a number of different
+kinds of functions that we can use.
+
+01:21:23.410 --> 01:21:25.300
+And here are three
+different examples.
+
+01:21:25.300 --> 01:21:28.490
+The first one is the one I used
+in these previous example.
+
+01:21:28.490 --> 01:21:30.400
+We call it the planar flow.
+
+01:21:30.400 --> 01:21:33.000
+And it's just a simple function
+that either allows you to learn
+
+01:21:33.000 --> 01:21:37.960
+the identity function or a one layer
+nonlinear transformation, using, for
+
+01:21:37.960 --> 01:21:39.810
+example, a 10h layer.
+
+01:21:39.810 --> 01:21:42.100
+You may have seen this in
+other kinds of models, for
+
+01:21:42.100 --> 01:21:44.640
+example if you are building
+a large scale classifier they
+
+01:21:44.640 --> 01:21:47.400
+would call a function like
+this a residual network and
+
+01:21:47.400 --> 01:21:50.060
+the same kind of thinking
+can be used here.
+
+01:21:50.060 --> 01:21:54.490
+There are two other kinds
+of functions you can use,
+
+01:21:54.490 --> 01:21:57.870
+one called a real non volume
+preserving transformation.
+
+01:21:57.870 --> 01:22:01.230
+And a more recent one called
+an inverse autoregressive flow.
+
+01:22:02.730 --> 01:22:04.820
+Each of these can be wide
+in different ways, but
+
+01:22:04.820 --> 01:22:07.990
+the key thing that these two
+functions do is that they
+
+01:22:07.990 --> 01:22:11.820
+ensure that the Jacobians that
+you end up with are triangular.
+
+01:22:11.820 --> 01:22:14.470
+And triangular Jacobians
+have the special property
+
+01:22:14.470 --> 01:22:17.000
+that they can always be
+computed in linear time,
+
+01:22:17.000 --> 01:22:20.400
+because all you need is handle
+the diagonal of the Jacobian.
+
+01:22:20.400 --> 01:22:23.910
+And so, these two can very powerful,
+especially the last
+
+01:22:23.910 --> 01:22:27.340
+one the inversion regressive flow
+can be implemented very easily.
+
+01:22:27.340 --> 01:22:30.500
+You can combine it with lost
+of combulutional networks and
+
+01:22:30.500 --> 01:22:32.320
+stock it and
+add lots of other kinds of method.
+
+01:22:33.990 --> 01:22:36.900
+And for any of these,
+you have linear time computation
+
+01:22:36.900 --> 01:22:40.420
+of the determinant which is what you
+need to evaluate the lower bound.
+
+01:22:40.420 --> 01:22:43.970
+And you have linear time computation
+of the gradients of the free energy
+
+01:22:43.970 --> 01:22:47.640
+of the variational object which
+is what you need to do learning.
+
+01:22:47.640 --> 01:22:51.670
+So again, just to compare, these are
+the two results we had before with
+
+01:22:51.670 --> 01:22:54.390
+the auto regressive and if we put
+the result from the inverse auto
+
+01:22:54.390 --> 01:22:56.820
+regressive to graph the flow
+we can do even better.
+
+01:22:56.820 --> 01:22:59.800
+And we can be much more flexible
+depending on the amount of
+
+01:22:59.800 --> 01:23:01.980
+computation we are willing to spend.
+
+01:23:01.980 --> 01:23:05.070
+Again, if we look at sampling,
+then we go even further.
+
+01:23:05.070 --> 01:23:08.440
+We have even more structure,
+much more diversity of color,
+
+01:23:08.440 --> 01:23:10.920
+much more consistency
+between different images.
+
+01:23:10.920 --> 01:23:14.610
+When we look at samples in CIFAR.
+
+01:23:14.610 --> 01:23:17.540
+So okay, there's a different
+strategy you can take, and
+
+01:23:17.540 --> 01:23:21.060
+this is a very popular one for
+building modeling in general.
+
+01:23:21.060 --> 01:23:24.600
+So when you build a model of complex
+data one of the questions that you
+
+01:23:24.600 --> 01:23:30.030
+have is what happens if I use latent
+variables to make my model better.
+
+01:23:30.030 --> 01:23:31.560
+And you will as the same question.
+
+01:23:31.560 --> 01:23:35.850
+Can I use latent variables to make
+my posterior distribution better?
+
+01:23:35.850 --> 01:23:38.850
+And that's exactly the approach
+we're going to explore here.
+
+01:23:38.850 --> 01:23:42.070
+Which we're going to say, can I
+introduce these additional variable
+
+01:23:42.070 --> 01:23:45.050
+omega that will help me
+induce some dependencies and
+
+01:23:45.050 --> 01:23:46.080
+build a better distribution.
+
+01:23:47.780 --> 01:23:51.410
+So, this is approach of
+building hierarchical model
+
+01:23:51.410 --> 01:23:53.590
+to represents your
+posterior distribution.
+
+01:23:53.590 --> 01:23:56.930
+I will call this hierarchical
+variational models.
+
+01:23:56.930 --> 01:24:00.970
+And unlike the previous case where
+I look at all this additional
+
+01:24:00.970 --> 01:24:03.730
+variables omega where
+deterministic because they were
+
+01:24:03.730 --> 01:24:06.590
+known transformations or
+previous variables.
+
+01:24:06.590 --> 01:24:11.180
+In this case these variables, omega,
+will be stochastic variables.
+
+01:24:11.180 --> 01:24:14.310
+But this approach now
+addresses a limitation
+
+01:24:14.310 --> 01:24:16.350
+of the normalizing flow approach.
+
+01:24:16.350 --> 01:24:18.940
+The normalizing flow approach
+can only be applied to
+
+01:24:18.940 --> 01:24:20.450
+continuous distributions.
+
+01:24:20.450 --> 01:24:23.070
+Because we needed this
+requirement of invertible and
+
+01:24:23.070 --> 01:24:24.630
+differentiable functions.
+
+01:24:24.630 --> 01:24:28.790
+But with this approach we can build
+much richer complex distributions.
+
+01:24:28.790 --> 01:24:31.400
+Which can both be discrete and
+continuous, or
+
+01:24:31.400 --> 01:24:33.160
+even some mixture of the two.
+
+01:24:33.160 --> 01:24:36.740
+And this is why this approach
+now will be very appealing.
+
+01:24:36.740 --> 01:24:40.510
+So, how we actually will think
+about that is to ask the question,
+
+01:24:40.510 --> 01:24:43.540
+if I have these additional
+stochastic variables,
+
+01:24:43.540 --> 01:24:46.460
+which have entered into my
+posterior distribution.
+
+01:24:46.460 --> 01:24:49.750
+What change would I have
+made to my model so
+
+01:24:49.750 --> 01:24:53.010
+that when I applied the rules and
+principles of variational inference,
+
+01:24:53.010 --> 01:24:56.850
+magically those variables omega
+would appear in my variational bond?
+
+01:24:56.850 --> 01:24:59.120
+So, on the left is
+our original model,
+
+01:24:59.120 --> 01:25:00.920
+the deep latent Gaussian model.
+
+01:25:00.920 --> 01:25:04.740
+It has some latent variables Zed and
+an observation model X.
+
+01:25:04.740 --> 01:25:06.745
+This model must always
+remain unchanged,
+
+01:25:06.745 --> 01:25:10.360
+cuz this is actually the model
+that through our loop of of
+
+01:25:10.360 --> 01:25:13.130
+processing of thinking is
+the one we're interested in.
+
+01:25:13.130 --> 01:25:16.680
+So the only way we can modify that
+model is to introduce a variable
+
+01:25:16.680 --> 01:25:20.770
+omega here on the side
+that's dependant on Z and X.
+
+01:25:20.770 --> 01:25:25.170
+And if you look at this graphical
+model and the distribution of omega
+
+01:25:25.170 --> 01:25:28.620
+will be this variable which I'm
+calling r, this distribution r.
+
+01:25:30.110 --> 01:25:32.530
+So there's something
+interesting here.
+
+01:25:32.530 --> 01:25:35.680
+You can see that we call omega
+now auxiliary variables, and
+
+01:25:35.680 --> 01:25:37.630
+the graphical model tells you why.
+
+01:25:37.630 --> 01:25:40.780
+If you observe omega,
+observing omega can
+
+01:25:40.780 --> 01:25:45.160
+never give you any information
+about z, or its dependency on x.
+
+01:25:45.160 --> 01:25:47.240
+And so, because they live outside,
+
+01:25:47.240 --> 01:25:50.280
+they do not have a role to play
+in building better models.
+
+01:25:50.280 --> 01:25:53.580
+But the reason we are interested
+in auxiliary variables,
+
+01:25:53.580 --> 01:25:57.530
+is the impact that they have on our
+inference and auxiliary variables
+
+01:25:57.530 --> 01:26:00.860
+are one of the most powerful methods
+we have for inference in general.
+
+01:26:00.860 --> 01:26:05.020
+And once auxiliary variables do is
+that, they give us very clever way
+
+01:26:05.020 --> 01:26:07.820
+of building a mixture
+model in our posterior.
+
+01:26:07.820 --> 01:26:10.150
+They introduce correlations and
+
+01:26:10.150 --> 01:26:13.930
+effectively what we will get is
+build a distribution of mixture
+
+01:26:13.930 --> 01:26:17.120
+of a distribution of set given x and
+omega.
+
+01:26:17.120 --> 01:26:20.870
+And by varying omega we will then
+be able to vary the mixture,
+
+01:26:20.870 --> 01:26:23.970
+which means we'll be able to
+adapt to the kind of dependencies
+
+01:26:23.970 --> 01:26:26.040
+structure that available
+in our posterior.
+
+01:26:27.490 --> 01:26:31.410
+So let's think about how we'd have
+to adapt our variational method.
+
+01:26:31.410 --> 01:26:34.200
+This is our original
+variational objective.
+
+01:26:34.200 --> 01:26:34.820
+In the top,
+
+01:26:34.820 --> 01:26:38.400
+the first term we'll usually be
+able to compute quite easily
+
+01:26:38.400 --> 01:26:41.330
+because we just need to compute
+the expectation onto some sample.
+
+01:26:41.330 --> 01:26:44.470
+But the second term, which is
+the entropy will typically be more
+
+01:26:44.470 --> 01:26:48.350
+difficult because it
+involves this term log(q).
+
+01:26:48.350 --> 01:26:52.140
+So again we have our new
+auxiliary variable model.
+
+01:26:52.140 --> 01:26:54.590
+And since we need to build
+an inference network or
+
+01:26:54.590 --> 01:26:59.730
+think about inference we will
+build two posterior distributions.
+
+01:26:59.730 --> 01:27:04.170
+A q of omega given x and a posterior
+distribution over the actual latent
+
+01:27:04.170 --> 01:27:07.930
+variables we are interested
+A Q of Zed given X and omega.
+
+01:27:07.930 --> 01:27:10.600
+That, and this is how you can
+see the mixture appearing.
+
+01:27:11.930 --> 01:27:15.780
+And then what we will do is that,
+okay, there it is, we'll
+
+01:27:15.780 --> 01:27:19.460
+introduce a new bond which we'll
+called an auxiliary variable bound.
+
+01:27:19.460 --> 01:27:21.090
+You can see it's very simple.
+
+01:27:21.090 --> 01:27:23.920
+From the top, we'll just make
+the new joint distribution
+
+01:27:23.920 --> 01:27:26.980
+which we'll include this
+new Distribution r.
+
+01:27:26.980 --> 01:27:28.130
+So log r.
+
+01:27:28.130 --> 01:27:31.770
+And then we will extend the entropy
+term to be the expectation over this
+
+01:27:31.770 --> 01:27:33.160
+joint distribution.
+
+01:27:33.160 --> 01:27:36.570
+And then what will turn out you'll
+see is that this just subtracts
+
+01:27:36.570 --> 01:27:39.970
+a non-negative term from
+our original objective.
+
+01:27:39.970 --> 01:27:43.240
+By being able to choose R and
+Q in some way and
+
+01:27:43.240 --> 01:27:46.050
+because we can learn them
+through stochastic optimization,
+
+01:27:46.050 --> 01:27:49.650
+we have the ability to make that
+second character close to zero and
+
+01:27:49.650 --> 01:27:50.990
+that is how we learn globally.
+
+01:27:52.140 --> 01:27:56.000
+So, that's the key question for
+auxiliary variable models.
+
+01:27:56.000 --> 01:27:59.310
+We just need to choose
+the auxiliary variable prior R and
+
+01:27:59.310 --> 01:28:00.600
+the auxiliary posterior Q.
+
+01:28:01.720 --> 01:28:03.480
+And they're lots of
+different ways and
+
+01:28:03.480 --> 01:28:06.620
+one of the ways I wanted to
+point out is if you choose
+
+01:28:06.620 --> 01:28:10.480
+r as an independent Gaussian,
+it has no connections on the data.
+
+01:28:10.480 --> 01:28:13.640
+This would call the Hamiltonian
+flow, this will connect to
+
+01:28:13.640 --> 01:28:16.790
+the previous way of thinking
+about normalizing flows.
+
+01:28:16.790 --> 01:28:19.880
+It will connect you to
+ways of auxiliary variable
+
+01:28:19.880 --> 01:28:23.110
+sampling that you already know
+using Hamiltonian variational.
+
+01:28:23.110 --> 01:28:25.730
+A Hamiltonian Monte Carlo
+which you can then use
+
+01:28:25.730 --> 01:28:28.870
+within variational inference and
+can be a powerful wave,
+
+01:28:28.870 --> 01:28:32.560
+the larger of a sampling is
+also in that class of methods.
+
+01:28:32.560 --> 01:28:35.750
+But you can obviously do better,
+instead of an independent Gaussian
+
+01:28:35.750 --> 01:28:38.640
+that has no dependency,
+you can add some dependency.
+
+01:28:38.640 --> 01:28:41.230
+You can use a Gaussian that
+is dependent on some data.
+
+01:28:41.230 --> 01:28:44.020
+You can use the auto-regressive
+distribution that we combine
+
+01:28:44.020 --> 01:28:44.940
+in the beginning.
+
+01:28:44.940 --> 01:28:47.620
+You could use mixture models,
+you could use the normalizing flow,
+
+01:28:47.620 --> 01:28:49.300
+you could use the Gaussian process.
+
+01:28:49.300 --> 01:28:51.720
+All of these methods
+now become available.
+
+01:28:51.720 --> 01:28:55.130
+And when you put them together,
+we can build distributions that
+
+01:28:55.130 --> 01:28:57.770
+are just as good as
+anything else that we have.
+
+01:28:57.770 --> 01:29:01.420
+With the additional flexibility
+that, in this class of models,
+
+01:29:01.420 --> 01:29:05.400
+we can handle both continuous and
+discreet distribution.
+
+01:29:05.400 --> 01:29:06.790
+And so the conclusion.
+
+01:29:06.790 --> 01:29:10.330
+We have easy sampling,
+easy evaluation of the bound and
+
+01:29:10.330 --> 01:29:11.100
+the gradients.
+
+01:29:11.100 --> 01:29:14.260
+We are always linear in
+the number of latent variables.
+
+01:29:14.260 --> 01:29:17.290
+And this is now one of the currently
+nicest ways of doing this.
+
+01:29:18.545 --> 01:29:21.395
+So, if we look at all
+the different ways of dealing with
+
+01:29:21.395 --> 01:29:24.215
+different posterior distributions,
+we have this spectrum.
+
+01:29:24.215 --> 01:29:26.935
+On one end, we have the true
+posterior distribution that we were
+
+01:29:26.935 --> 01:29:28.175
+trying to get to.
+
+01:29:28.175 --> 01:29:31.065
+And we began at the very other side
+
+01:29:31.065 --> 01:29:34.445
+with fully-factorized mean
+field approximations.
+
+01:29:34.445 --> 01:29:37.065
+And we try to take
+steps to get closer and
+
+01:29:37.065 --> 01:29:38.950
+closer to this true posterior.
+
+01:29:38.950 --> 01:29:43.140
+We started with covariance models,
+with simple structures, but
+
+01:29:43.140 --> 01:29:44.680
+they were always Gaussians.
+
+01:29:44.680 --> 01:29:48.050
+We use mixture models which can
+typically be difficult to learn.
+
+01:29:48.050 --> 01:29:51.464
+We used non linear order regressive
+models which helped us be much
+
+01:29:51.464 --> 01:29:51.968
+better.
+
+01:29:51.968 --> 01:29:55.808
+And then we looked at normalizing
+flows and auxiliary variable
+
+01:29:55.808 --> 01:29:59.429
+methods which allow us to on
+the fly use more computation and
+
+01:29:59.429 --> 01:30:01.758
+build better and richer posteriors.
+
+01:30:01.758 --> 01:30:06.860
+So, the question you will have is,
+how actually will I choose my best?
+
+01:30:06.860 --> 01:30:10.072
+We go back all the way to the
+beginning of the talk to what Dave
+
+01:30:10.072 --> 01:30:11.120
+mentioned.
+
+01:30:11.120 --> 01:30:12.830
+This is what we call boxes loop,
+
+01:30:12.830 --> 01:30:15.620
+this loop of thinking
+about your problem,
+
+01:30:15.620 --> 01:30:19.670
+building the simplest model starting
+with the simplest kind of inference.
+
+01:30:19.670 --> 01:30:23.000
+Understanding what is going on and
+going back again, and building
+
+01:30:23.000 --> 01:30:26.570
+more understanding, more intuition,
+using richer and richer posteriors.
+
+01:30:27.680 --> 01:30:32.450
+So, we get to the end of the talk,
+and this was our summary slide.
+
+01:30:32.450 --> 01:30:35.310
+We want to introduce you
+to variational inference,
+
+01:30:35.310 --> 01:30:38.430
+which was this approach
+of learning approximate
+
+01:30:38.430 --> 01:30:41.730
+posterior distributions in some
+family of variational methods.
+
+01:30:41.730 --> 01:30:44.990
+We introduce stochastic
+optimization as the key tool
+
+01:30:44.990 --> 01:30:49.330
+that allow us to scale variational
+inference to massive datasets.
+
+01:30:49.330 --> 01:30:52.630
+It allowed us to apply to
+the widest class of problems,
+
+01:30:52.630 --> 01:30:54.920
+especially nonconjugate and
+nonlinear models,
+
+01:30:54.920 --> 01:30:59.520
+and we're able to use very flexible
+and rich posterior distribution.
+
+01:30:59.520 --> 01:31:03.020
+Together, these things give
+us a set of tools that
+
+01:31:03.020 --> 01:31:07.000
+allow us to really scale variational
+inference to modern problems.
+
+01:31:07.000 --> 01:31:10.233
+We think this will be one of
+the things that will be increasingly
+
+01:31:10.233 --> 01:31:13.588
+important as we look to build
+machine learning with higher impact
+
+01:31:13.588 --> 01:31:14.691
+and at larger scale.
+
+01:31:14.691 --> 01:31:17.862
+So, on behalf of myself and
+Dave and Rajish, thank you for
+
+01:31:17.862 --> 01:31:19.135
+coming this morning.
+
+01:31:19.135 --> 01:31:26.796
+>> [APPLAUSE]
+>> So,
+
+01:31:26.796 --> 01:31:31.394
+we have lots of time for questions,
+maybe you guys should come up.
+
+01:31:31.394 --> 01:31:38.162
+[LAUGH]
+>> [INAUDIBLE]
+
+01:31:38.162 --> 01:31:39.948
+>> Mike's there and there,
+
+01:31:39.948 --> 01:31:41.740
+if anyone has questions.
+
+01:31:59.554 --> 01:32:01.014
+>> You want to take
+this [INAUDIBLE]?
+
+01:32:02.460 --> 01:32:06.080
+>> Okay,
+right now are there questions?
+
+01:32:06.080 --> 01:32:07.310
+>> Is there a question?
+
+01:32:07.310 --> 01:32:07.820
+>> Yeah, over here.
+
+01:32:10.640 --> 01:32:13.300
+So what do you see
+as the next step in
+
+01:32:13.300 --> 01:32:15.030
+approximating the two plus theory?
+
+01:32:15.030 --> 01:32:19.980
+What is the efforts going
+forward towards that goal?
+
+01:32:29.700 --> 01:32:34.320
+I think looking at various
+approximations that don't
+
+01:32:34.320 --> 01:32:36.790
+necessarily have analytic densities.
+
+01:32:36.790 --> 01:32:40.460
+Like, we laid out this criteria
+about meeting score functions.
+
+01:32:40.460 --> 01:32:42.630
+Needing to be able to value
+the density and sampling from them.
+
+01:32:42.630 --> 01:32:46.256
+But there are a lot of distributions
+that you can construct where you can
+
+01:32:46.256 --> 01:32:47.596
+just simulate from them.
+
+01:32:47.596 --> 01:32:50.087
+Working with these kinds of
+approaches I think would be
+
+01:32:50.087 --> 01:32:50.740
+pretty cool.
+
+01:32:56.462 --> 01:32:57.023
+Yeah?
+
+01:32:57.023 --> 01:33:02.225
+>> Hello, this question to
+the last part that Shakir told.
+
+01:33:02.225 --> 01:33:07.055
+So the two models with
+auxiliary variables,
+
+01:33:07.055 --> 01:33:12.385
+is this essentially an approach
+to have an encoder and a decoder?
+
+01:33:13.450 --> 01:33:14.583
+And in some way?
+
+01:33:18.318 --> 01:33:18.907
+>> Yeah, so
+
+01:33:18.907 --> 01:33:23.420
+that approach I described it in the
+framework of encoders and decoders.
+
+01:33:23.420 --> 01:33:27.040
+It can be used exactly in that
+approach of amortized variational
+
+01:33:27.040 --> 01:33:30.330
+inference and the variational
+[INAUDIBLE] code framework But it's
+
+01:33:30.330 --> 01:33:34.470
+also more general, so you haven't
+seen an example yet, for example,
+
+01:33:34.470 --> 01:33:37.480
+of applying auxiliary variables
+to Bayesian neural networks,
+
+01:33:37.480 --> 01:33:40.080
+where you want to learn
+the series of parameters,
+
+01:33:40.080 --> 01:33:42.950
+but that approach is also
+applicable in that setting.
+
+01:33:42.950 --> 01:33:44.518
+So it's, yes.
+
+01:33:44.518 --> 01:33:46.605
+>> Thank you.
+
+01:33:54.543 --> 01:33:58.360
+Boasion inference was,
+at least when it started,
+
+01:33:58.360 --> 01:34:02.550
+it was kind of an analytical
+alternative to something.
+
+01:34:03.630 --> 01:34:08.890
+And if I quote Devot correctly, you
+used to say that boasional inference
+
+01:34:08.890 --> 01:34:12.700
+That's what you do while waiting for
+give some input to converge.
+
+01:34:12.700 --> 01:34:15.860
+So but now in this talk,
+
+01:34:15.860 --> 01:34:19.975
+I saw that actually some link
+is being drawn into the picture.
+
+01:34:19.975 --> 01:34:24.890
+Even in the inside inference to
+convert those gradients which
+
+01:34:24.890 --> 01:34:30.150
+are analytical and anymore Is
+there any kind of convergence now
+
+01:34:30.150 --> 01:34:34.560
+between MCMC, and
+variational inference?
+
+01:34:34.560 --> 01:34:38.170
+Would it fair to spell that
+in the future a kind of
+
+01:34:38.170 --> 01:34:42.670
+a converged model will emerge, which
+nicely combines both these methods,
+
+01:34:42.670 --> 01:34:43.880
+and it becomes just one?
+
+01:34:45.280 --> 01:34:46.240
+>> That's a great question.
+
+01:34:49.550 --> 01:34:51.550
+The few remarks I
+would want to make, so
+
+01:34:51.550 --> 01:34:57.070
+it's true that the old joke was that
+you would derive a Gibb sampler,
+
+01:34:57.070 --> 01:35:00.650
+start running it and while it's
+converging, write pages of math
+
+01:35:00.650 --> 01:35:03.070
+to derive your variational
+inference algorithm implemented.
+
+01:35:03.070 --> 01:35:05.040
+And if you were done
+with that before the Gibb
+
+01:35:05.040 --> 01:35:07.000
+sampler had converged, then.
+
+01:35:07.000 --> 01:35:09.050
+You used whatever was done first.
+
+01:35:09.050 --> 01:35:12.860
+Now you can see from this
+tutorial that's really changed.
+
+01:35:12.860 --> 01:35:15.810
+That these methods have
+become much more generic,
+
+01:35:15.810 --> 01:35:17.750
+where you write down a model and
+
+01:35:17.750 --> 01:35:21.920
+we can, if we put either, we put it
+in some conditional conjugate form.
+
+01:35:21.920 --> 01:35:24.670
+We can immediately write down
+the coordinate inference algorithm,
+
+01:35:24.670 --> 01:35:26.880
+the for example the LDA
+model I talked about.
+
+01:35:26.880 --> 01:35:29.560
+We had a whole long
+appendix deriving that.
+
+01:35:29.560 --> 01:35:31.280
+We don't need that now.
+
+01:35:31.280 --> 01:35:34.840
+Or working with one of these other
+
+01:35:34.840 --> 01:35:38.800
+approximations like a score grading
+or a reparameterization gradient,
+
+01:35:38.800 --> 01:35:42.940
+without even having to do
+the conditional conjugate analysis.
+
+01:35:42.940 --> 01:35:44.250
+So it's become easier.
+
+01:35:45.310 --> 01:35:48.020
+As you pointed out though
+now sampling is in the mix.
+
+01:35:48.020 --> 01:35:51.110
+So sampling now is part
+of this variational
+
+01:35:51.110 --> 01:35:54.440
+process though there
+is a real distinction.
+
+01:35:54.440 --> 01:35:58.510
+There are two different philosophies
+to approximate inference.
+
+01:35:58.510 --> 01:36:00.550
+Philosophies make it sound
+more important than it is.
+
+01:36:00.550 --> 01:36:03.260
+There are two different approaches
+to approximate inference.
+
+01:36:03.260 --> 01:36:05.600
+One is generating good sample.
+
+01:36:05.600 --> 01:36:09.230
+It is creating a mark up chain
+whose stationary distribution is
+
+01:36:09.230 --> 01:36:10.150
+the target.
+
+01:36:10.150 --> 01:36:14.030
+Here, we're using sampling as part
+of the optimization procedure.
+
+01:36:14.030 --> 01:36:14.640
+That said,
+
+01:36:14.640 --> 01:36:18.810
+there has been some interesting
+work over the last couple of years.
+
+01:36:18.810 --> 01:36:21.660
+Maybe you guys remember
+the references better than I do.
+
+01:36:21.660 --> 01:36:26.360
+Solomons Yeah, so there's work
+by Solomons and Knowles, right?
+
+01:36:26.360 --> 01:36:27.320
+Solomons and Knowles that
+
+01:36:27.320 --> 01:36:29.360
+tries to bring together
+these two perspectives.
+
+01:36:29.360 --> 01:36:32.140
+And there's work in the context
+of stochastic variational
+
+01:36:32.140 --> 01:36:36.680
+inference by Matt Hoffman
+that uses MCMC to approximate
+
+01:36:36.680 --> 01:36:40.370
+intractable optimal
+variational distributions.
+
+01:36:40.370 --> 01:36:45.420
+So indeed there are places where
+now these two approaches to.
+
+01:36:45.420 --> 01:36:48.170
+Approximate computation
+are coming together.
+
+01:36:48.170 --> 01:36:52.580
+>> Thank you.
+>> DId you guys wanna add anything?
+
+01:36:52.580 --> 01:36:54.260
+>> Thanks for the great tutorial.
+
+01:36:54.260 --> 01:36:58.770
+I have a question about
+the hierarchical that introduced at
+
+01:36:58.770 --> 01:37:03.720
+the end about the direction in
+this hierarchical structure And
+
+01:37:03.720 --> 01:37:06.420
+why is about that's the Russian
+matter, but it seems in
+
+01:37:06.420 --> 01:37:09.540
+the case of causal inference it
+seem the Russian doesn't matter.
+
+01:37:09.540 --> 01:37:13.395
+And wonder, does that means we need
+additional structured learning in
+
+01:37:13.395 --> 01:37:15.783
+order to find
+the hierarchical structure?
+
+01:37:19.846 --> 01:37:23.170
+>> I think structures and
+causal inference are important.
+
+01:37:23.170 --> 01:37:26.790
+But when you build
+a Hierarchal variation model.
+
+01:37:26.790 --> 01:37:29.800
+The idea is to condition
+the new things you're adding on
+
+01:37:29.800 --> 01:37:33.030
+the structure you already believe so
+that if you marginalize out that
+
+01:37:33.030 --> 01:37:38.000
+extra stuff you still have
+the structure that you actually care
+
+01:37:38.000 --> 01:37:43.230
+about, you're just getting better
+posterior approximations for
+
+01:37:43.230 --> 01:37:44.484
+say the parameters
+in your cul-de-sac.
+
+01:37:46.590 --> 01:37:47.140
+Model.
+
+01:37:47.140 --> 01:37:50.212
+>> In the end,
+those are the variable.
+
+01:37:50.212 --> 01:37:51.226
+The direction for
+
+01:37:51.226 --> 01:37:55.710
+the omega is actually from
+x to w which surprised me.
+
+01:37:55.710 --> 01:37:58.890
+I thought maybe actually
+omega to x as observation.
+
+01:38:00.420 --> 01:38:02.390
+>> So I think you want that
+because that's what gives you this
+
+01:38:02.390 --> 01:38:06.022
+marginalization property
+>> Where you can imagine any
+
+01:38:06.022 --> 01:38:09.373
+graphical model you have,
+the things that are at the bottom,
+
+01:38:09.373 --> 01:38:12.529
+you can integrate out and
+recover the original model, and
+
+01:38:12.529 --> 01:38:15.127
+that's what conditioning
+that way gives you.
+
+01:38:18.425 --> 01:38:21.701
+>> You know, your question is a good
+question, brings up a higher level
+
+01:38:21.701 --> 01:38:24.029
+comment I would wanna make here,
+which is that.
+
+01:38:25.150 --> 01:38:30.200
+There are these, especially
+at the end, it starts looking
+
+01:38:30.200 --> 01:38:34.060
+like we're doing modelling in every
+stage of the process, right, both
+
+01:38:34.060 --> 01:38:36.400
+when we're building the model, and
+when we're building the posterior.
+
+01:38:36.400 --> 01:38:39.510
+And you're asking about the
+structure of the posterior model,
+
+01:38:39.510 --> 01:38:42.150
+the model of
+the approximate posterior.
+
+01:38:42.150 --> 01:38:44.750
+And you want to have different
+sensibilities when you're building
+
+01:38:44.750 --> 01:38:45.730
+these two types of models.
+
+01:38:45.730 --> 01:38:48.860
+When you're modeling your data, then
+you're really trying to simplify
+
+01:38:48.860 --> 01:38:50.980
+your data, understand your data,
+form predictions and
+
+01:38:50.980 --> 01:38:52.850
+generalize to new data.
+
+01:38:52.850 --> 01:38:56.440
+When you're building a model that
+represents your approximating
+
+01:38:56.440 --> 01:39:00.080
+family, you want something as
+flexible as possible subject to of
+
+01:39:00.080 --> 01:39:03.580
+course the statistical computational
+tradeoff that brought up.
+
+01:39:03.580 --> 01:39:06.740
+In one of the opening areas, I
+think, in variable inference, is to
+
+01:39:06.740 --> 01:39:09.570
+be thinking about variable inference
+as this estimation problem.
+
+01:39:09.570 --> 01:39:10.540
+What are we trading off and
+
+01:39:10.540 --> 01:39:14.460
+how are these Two different sets
+of considerations articulated, one
+
+01:39:14.460 --> 01:39:17.620
+where we want to simplify our data
+and predict the future and the other
+
+01:39:17.620 --> 01:39:21.610
+where we want the most expressive
+class of approximate posteriors that
+
+01:39:21.610 --> 01:39:25.130
+we can still hope to do some kind
+of variational optimization over.
+
+01:39:25.130 --> 01:39:27.620
+That gives us meaningful results.
+
+01:39:27.620 --> 01:39:31.220
+That's a good question. Hi.
+
+01:39:31.220 --> 01:39:33.280
+Can I ask a question?
+
+01:39:33.280 --> 01:39:36.550
+About using more complex
+approximated distribution in that
+
+01:39:36.550 --> 01:39:37.890
+main field.
+
+01:39:37.890 --> 01:39:42.690
+I think that there are two ways
+to decrease the variation of CAP.
+
+01:39:42.690 --> 01:39:46.640
+One way is, to use a more complex
+approximated distribution.
+
+01:39:46.640 --> 01:39:49.889
+And the other is to make
+the distribution that is actually
+
+01:39:49.889 --> 01:39:52.266
+approximated, easier to approximate.
+
+01:39:52.266 --> 01:39:56.503
+So for example, for the or
+audio encoder scenario.
+
+01:39:56.503 --> 01:40:01.292
+If we have a more complex generative
+model That yields a posterior
+
+01:40:01.292 --> 01:40:06.355
+that is more factored or say that
+it is easier to approximate.
+
+01:40:06.355 --> 01:40:10.842
+Than is there any reason to prefer
+to put the complexity into a more
+
+01:40:10.842 --> 01:40:15.658
+complex approximated distribution
+rather than put in the complexity
+
+01:40:15.658 --> 01:40:19.749
+into making this generative
+model easier to approximate.
+
+01:40:19.749 --> 01:40:20.737
+>> [INAUDIBLE] All right,
+
+01:40:20.737 --> 01:40:22.713
+do you guys wanna make
+any comments after me?
+
+01:40:22.713 --> 01:40:25.160
+Okay.
+
+01:40:25.160 --> 01:40:29.660
+We've agreed that I will make
+a couple of comments about this.
+
+01:40:29.660 --> 01:40:31.350
+That's a real great question.
+
+01:40:31.350 --> 01:40:37.380
+It's kind of an age-old
+question of do I want the right
+
+01:40:37.380 --> 01:40:40.740
+answer to the wrong question or the
+wrong answer to the right question?
+
+01:40:41.750 --> 01:40:46.310
+And I think what you want is the
+wrong answer to the right question.
+
+01:40:49.350 --> 01:40:52.120
+But this is a matter of debate.
+
+01:40:52.120 --> 01:40:54.740
+It goes back to what we
+were talking about earlier,
+
+01:40:54.740 --> 01:40:57.790
+when you're choosing a model to use,
+you want to choose something that
+
+01:40:57.790 --> 01:41:00.220
+simplifies your data and
+predicts new data.
+
+01:41:00.220 --> 01:41:03.130
+You want to not be hindered by
+things like condition conjugacy,
+
+01:41:03.130 --> 01:41:07.470
+like in [INAUDIBLE] piece and
+[INAUDIBLE] piece.
+
+01:41:07.470 --> 01:41:09.880
+But at the same time of
+course as you pointed out,
+
+01:41:09.880 --> 01:41:14.360
+that adds complexity to
+the subsequent computation and
+
+01:41:14.360 --> 01:41:17.870
+inference in optimization
+that you need to make.
+
+01:41:17.870 --> 01:41:23.620
+So there's no real good answer
+to the question of when should
+
+01:41:23.620 --> 01:41:27.420
+I make my posterior more complex or
+when should I simplify my model.
+
+01:41:27.420 --> 01:41:29.540
+I think one thing that your
+question brings up is that
+
+01:41:31.120 --> 01:41:35.320
+traditional methods of model
+selection kind of go out the window.
+
+01:41:35.320 --> 01:41:38.810
+Because we are now
+evaluating our model and
+
+01:41:38.810 --> 01:41:41.940
+our approximate inference as
+a bundle and that's important.
+
+01:41:41.940 --> 01:41:44.600
+And a lot of the results that
+Chuck here showed are doing
+
+01:41:44.600 --> 01:41:45.300
+just that, right?
+
+01:41:45.300 --> 01:41:48.060
+We're doing some downstream
+prediction because we can't
+
+01:41:48.060 --> 01:41:50.860
+separate the choice of model from
+the choice of approximate inference.
+
+01:41:50.860 --> 01:41:56.060
+They're connected in some ways
+that are hard to understand how.
+
+01:41:56.060 --> 01:41:59.537
+And that's another
+open area of course.
+
+01:41:59.537 --> 01:42:00.491
+>> Thank you.
+>> Thank you.
+
+01:42:13.198 --> 01:42:15.448
+>> [INAUDIBLE] Was
+there another one?
+
+01:42:15.448 --> 01:42:16.018
+Okay, great.
+
+01:42:16.018 --> 01:42:17.269
+I have a question.
+
+01:42:17.269 --> 01:42:18.017
+Okay.
+
+01:42:18.017 --> 01:42:20.548
+Great.
+
+01:42:20.548 --> 01:42:23.705
+>> So variation of inference
+is often criticized for
+
+01:42:23.705 --> 01:42:25.816
+underestimating the variance.
+
+01:42:25.816 --> 01:42:29.216
+Is there anything new that we can
+actually get the right variances out
+
+01:42:29.216 --> 01:42:30.630
+of variational inference?
+
+01:42:30.630 --> 01:42:33.617
+Or what kind of things could we do
+in order to address this issue?
+
+01:42:36.549 --> 01:42:38.469
+>> [INAUDIBLE].
+
+01:42:38.469 --> 01:42:43.567
+>> [LAUGH] Yeah, yeah, so
+[INAUDIBLE] has some nice work
+
+01:42:43.567 --> 01:42:50.575
+on using perturbation period to
+find estimates of smooth functions.
+
+01:42:50.575 --> 01:42:53.350
+So like a covariance is an example
+using a mean field approximation.
+
+01:42:55.420 --> 01:42:57.250
+That being said, I think these
+richer approximations that Shakir
+
+01:42:57.250 --> 01:43:00.230
+talked about can help in this way,
+too.
+
+01:43:01.310 --> 01:43:03.585
+That if you have a full
+[INAUDIBLE] structure and
+
+01:43:03.585 --> 01:43:05.170
+you transform that structure.
+
+01:43:05.170 --> 01:43:10.695
+You have a high belief that
+you'll capture the correlation
+
+01:43:10.695 --> 01:43:16.451
+structure to the computational
+cost relative to [INAUDIBLE].
+
+01:43:16.451 --> 01:43:17.265
+>> Do you have a question?
+
+01:43:22.968 --> 01:43:27.351
+>> So let me follow up that one
+with, you guys brushed a little
+
+01:43:27.351 --> 01:43:32.110
+quickly over how you were
+evaluating your different methods.
+
+01:43:32.110 --> 01:43:35.420
+And so I was wondering if you
+could talk a little bit more about
+
+01:43:35.420 --> 01:43:37.780
+what you're using to
+evaluate right now.
+
+01:43:37.780 --> 01:43:41.760
+What you think is the right way to
+evaluate and maybe even a third
+
+01:43:41.760 --> 01:43:45.302
+point which is criticism as
+separate from evaluation.
+
+01:43:51.056 --> 01:43:54.070
+>> I'll just start just to say
+the current thing that we do.
+
+01:43:54.070 --> 01:43:57.500
+So typically, I think this question
+is the question no one can
+
+01:43:57.500 --> 01:43:58.209
+agree on actually.
+
+01:43:58.209 --> 01:44:02.009
+Cuz we don't actually have a good
+way of evaluating our models
+
+01:44:02.009 --> 01:44:02.819
+typically.
+
+01:44:02.819 --> 01:44:05.349
+Because we also wanna use them for
+something else and
+
+01:44:05.349 --> 01:44:07.374
+we don't have even evaluation for
+that.
+
+01:44:07.374 --> 01:44:11.680
+So right now, all the results that I
+showed always report the variational
+
+01:44:11.680 --> 01:44:13.310
+bound instead.
+
+01:44:13.310 --> 01:44:16.670
+Because the variational bound is at
+least for that, it's good enough for
+
+01:44:16.670 --> 01:44:19.530
+model selection and
+it's consistence in that sense.
+
+01:44:19.530 --> 01:44:23.721
+Typically, if you wanted to be very
+careful, what you do is auto-compute
+
+01:44:23.721 --> 01:44:28.110
+the true margin of likelihood by
+importing sampling under the model.
+
+01:44:28.110 --> 01:44:31.630
+And there's different ways
+of doing that these days.
+
+01:44:31.630 --> 01:44:35.240
+Maybe the easiest way to do it
+is to switch to use a different
+
+01:44:35.240 --> 01:44:36.500
+objective function.
+
+01:44:36.500 --> 01:44:39.440
+And you can use
+the difference of variational
+
+01:44:39.440 --> 01:44:42.270
+objective which is called
+the importance weighted objective or
+
+01:44:42.270 --> 01:44:43.880
+a more generalized
+variation objective.
+
+01:44:43.880 --> 01:44:47.390
+Which will then allow you to
+use the import and sampling and
+
+01:44:47.390 --> 01:44:50.240
+then you can just send the number
+of samples to very large and that
+
+01:44:50.240 --> 01:44:53.010
+gives you a better approximation
+of the true distribution.
+
+01:44:53.010 --> 01:44:56.080
+Then of course, is the issue of what
+you do with it before which is why I
+
+01:44:56.080 --> 01:44:57.770
+show you a lot of samples.
+
+01:44:57.770 --> 01:45:01.188
+And we do a lot of
+inspection of the model but.
+
+01:45:01.188 --> 01:45:02.960
+Probably [INAUDIBLE]
+is gonna come and
+
+01:45:02.960 --> 01:45:04.520
+say a little bit more
+about the critique.
+
+01:45:07.120 --> 01:45:11.140
+>> Yeah, I think the idea of model
+criticism specific to a task
+
+01:45:11.140 --> 01:45:14.790
+is important and there are lots
+of cool ways to do it.
+
+01:45:14.790 --> 01:45:17.401
+There's stuff like [INAUDIBLE]
+predictive checking,
+
+01:45:17.401 --> 01:45:21.420
+which asks how well do simulations
+from your model match the data.
+
+01:45:21.420 --> 01:45:25.322
+And I think in the future expanding
+this to inference is also important.
+
+01:45:25.322 --> 01:45:29.543
+Am I capturing the correlations
+that are implied by my model in
+
+01:45:29.543 --> 01:45:30.932
+my approximation?
+
+01:45:35.227 --> 01:45:38.792
+>> Yeah,
+I don't think I was gonna add much,
+
+01:45:38.792 --> 01:45:42.070
+I mean how to evaluate this,
+proceed.
+
+01:45:42.070 --> 01:45:44.738
+We really had to evaluate
+probability models is the question
+
+01:45:44.738 --> 01:45:45.794
+you're asking about.
+
+01:45:45.794 --> 01:45:48.410
+And that's an issue
+that statisticians and
+
+01:45:48.410 --> 01:45:51.739
+machine learners have been
+discussing for 30 years.
+
+01:45:51.739 --> 01:45:53.533
+And there's great work, for
+
+01:45:53.533 --> 01:45:57.840
+example in the 1970s by Seymour
+Geisser on predictive sample reuse
+
+01:45:57.840 --> 01:46:01.300
+looking at log predictive
+likelihoods of held out data.
+
+01:46:01.300 --> 01:46:05.350
+That's my personal preferred
+way to evaluate models
+
+01:46:05.350 --> 01:46:08.730
+to avoid doing things like comparing
+bounds and comparing approximate
+
+01:46:08.730 --> 01:46:11.462
+inference methods, putting all
+methods on the same kind of scale.
+
+01:46:11.462 --> 01:46:15.658
+And [INAUDIBLE] mentioned
+posterior predictive checks and
+
+01:46:15.658 --> 01:46:18.960
+that we can go back to this
+picture with criticized model.
+
+01:46:18.960 --> 01:46:24.440
+Where that picture there is from a
+beautiful paper by George Box called
+
+01:46:24.440 --> 01:46:27.020
+robustness and
+the statistics of science or
+
+01:46:27.020 --> 01:46:28.650
+something like that from 1980.
+
+01:46:28.650 --> 01:46:33.020
+And it's about how do you check your
+model if you condition on data and
+
+01:46:33.020 --> 01:46:34.870
+you get a posterior P of Z given X.
+
+01:46:35.890 --> 01:46:37.180
+Whether or
+not your model's right or wrong,
+
+01:46:37.180 --> 01:46:39.670
+you're gonna condition on data and
+get that posterior.
+
+01:46:39.670 --> 01:46:42.980
+And so George Box said that and
+this is at the highest level,
+
+01:46:42.980 --> 01:46:45.590
+if you wanna understand whether or
+not your model's doing well.
+
+01:46:45.590 --> 01:46:48.890
+You need to step
+outside of its cage and
+
+01:46:48.890 --> 01:46:52.120
+ask yourself are those
+posterior inferences good.
+
+01:46:52.120 --> 01:46:55.170
+Now he did it in
+a certain way in 1980.
+
+01:46:55.170 --> 01:46:58.490
+Nowadays things like
+held out likelihood and
+
+01:46:58.490 --> 01:47:02.250
+other measures of generalization
+error could take the place of that.
+
+01:47:02.250 --> 01:47:04.140
+So I think that's where things
+like cross validation and
+
+01:47:04.140 --> 01:47:05.100
+held out likelihood come in.
+
+01:47:07.830 --> 01:47:09.491
+>> There's another question.
+
+01:47:09.491 --> 01:47:10.398
+Hello.
+
+01:47:10.398 --> 01:47:15.035
+>> I want to relate [INAUDIBLE]
+networks and [INAUDIBLE] inference.
+
+01:47:15.035 --> 01:47:18.824
+Do you think there is some
+underlying variation inference going
+
+01:47:18.824 --> 01:47:22.942
+on in [INAUDIBLE] university and
+networks when we compute that?
+
+01:47:22.942 --> 01:47:25.100
+>> That's a good question.
+
+01:47:25.100 --> 01:47:28.164
+>> Okay, I think there's a lot
+of different ways of thinking
+
+01:47:28.164 --> 01:47:28.859
+about this.
+
+01:47:30.540 --> 01:47:32.320
+This is the importance
+of asking a model.
+
+01:47:32.320 --> 01:47:35.640
+So let's see,
+where's a picture of a model.
+
+01:47:35.640 --> 01:47:39.830
+So here's a picture of a model,
+it is a latent variable and
+
+01:47:39.830 --> 01:47:40.660
+then you have x.
+
+01:47:40.660 --> 01:47:43.980
+So the key part of this model
+is that you have specified
+
+01:47:43.980 --> 01:47:44.858
+everything about it.
+
+01:47:44.858 --> 01:47:47.668
+You have said there's some
+probability of the latent variable
+
+01:47:47.668 --> 01:47:50.214
+and you've also made
+the assumption of what probability
+
+01:47:50.214 --> 01:47:51.337
+in the world looks like.
+
+01:47:51.337 --> 01:47:53.690
+So you've specified
+the likelihood function.
+
+01:47:53.690 --> 01:47:56.800
+And so statistically you'd
+call these prescribed models.
+
+01:47:56.800 --> 01:47:58.980
+And in this class of
+prescribed models,
+
+01:47:58.980 --> 01:48:02.510
+things like variational inference,
+maximum likelihood are applicable.
+
+01:48:02.510 --> 01:48:05.330
+Now when you go to
+the adversarial network setting,
+
+01:48:05.330 --> 01:48:07.520
+then you are in a different
+class of models.
+
+01:48:07.520 --> 01:48:09.720
+Those are models that you
+call implicit models and
+
+01:48:09.720 --> 01:48:13.000
+they don't specify this
+likelihood function at the end,
+
+01:48:13.000 --> 01:48:16.350
+they just only specify
+a data generating mechanism.
+
+01:48:16.350 --> 01:48:19.160
+And so the principle of
+inference that you have to use
+
+01:48:19.160 --> 01:48:20.650
+is different from this one.
+
+01:48:20.650 --> 01:48:23.770
+Here, the principle of inference
+is about estimating the marginal
+
+01:48:23.770 --> 01:48:25.150
+likelihood of data and
+
+01:48:25.150 --> 01:48:28.860
+then using that likelihood to
+do other kinds of reasoning.
+
+01:48:28.860 --> 01:48:31.140
+But when you are in implicit
+models and in GANs,
+
+01:48:31.140 --> 01:48:32.900
+the principle of
+inference is different.
+
+01:48:32.900 --> 01:48:35.360
+The principle of inference
+is about comparison.
+
+01:48:35.360 --> 01:48:39.030
+It's can you compare two samples
+of data, as in two sample and
+
+01:48:39.030 --> 01:48:40.160
+hypothesis testing, and
+
+01:48:40.160 --> 01:48:43.330
+then give a knowledge about how
+you think they are related.
+
+01:48:43.330 --> 01:48:45.470
+Can you derive a loss function
+that helps you learn?
+
+01:48:45.470 --> 01:48:49.340
+So they are very different
+principles of inference actually
+
+01:48:49.340 --> 01:48:55.510
+going on and
+that’s how you [INAUDIBLE].
+
+01:48:55.510 --> 01:48:56.410
+>> Shakira is too modest,
+
+01:48:56.410 --> 01:49:00.590
+he posted a very beautiful paper
+on the archive four days ago that
+
+01:49:00.590 --> 01:49:03.170
+explains the intuition he
+just gave here at the podium.
+
+01:49:03.170 --> 01:49:07.019
+So to answer your question, I would
+recommend looking at that paper,
+
+01:49:07.019 --> 01:49:08.925
+Shakira's paper on the archive.
+
+01:49:08.925 --> 01:49:09.519
+>> What paper?
+
+01:49:09.519 --> 01:49:12.410
+>> [LAUGH]
+>> Hi.
+
+01:49:12.410 --> 01:49:15.060
+So as you mentioned in
+the first part of the talk,
+
+01:49:15.060 --> 01:49:20.100
+optimizing the variable will
+lead us to a local solution.
+
+01:49:20.100 --> 01:49:23.655
+And I'm wondering so in that respect
+variational inference techniques
+
+01:49:23.655 --> 01:49:25.936
+are known to be sensitive
+to initialization.
+
+01:49:25.936 --> 01:49:30.857
+So the question is what if I want
+to be sure that I'm exploring
+
+01:49:30.857 --> 01:49:32.530
+different optima.
+
+01:49:32.530 --> 01:49:34.960
+So could you comment on,
+
+01:49:34.960 --> 01:49:39.590
+is there measure of coverage
+in the spatial solutions.
+
+01:49:39.590 --> 01:49:41.810
+And I guess in that respect,
+
+01:49:41.810 --> 01:49:45.790
+I mean having a stochastic
+gradient descent might help?
+
+01:49:45.790 --> 01:49:47.480
+Now asking these drunk people and
+
+01:49:47.480 --> 01:49:50.100
+then well,
+we are covering more space.
+
+01:49:50.100 --> 01:49:54.715
+But how can we assure that we are
+really reaching different optima?
+
+01:49:59.089 --> 01:50:02.450
+>> So
+the actual assurance is pretty hard.
+
+01:50:02.450 --> 01:50:04.450
+So if you wanna know if
+you're getting coverage,
+
+01:50:04.450 --> 01:50:06.130
+I don't think there is
+a great answer to that.
+
+01:50:06.130 --> 01:50:07.840
+Besides running a sampler,
+
+01:50:07.840 --> 01:50:12.020
+but even that isn't great because
+the sampler will also get stuck.
+
+01:50:12.020 --> 01:50:16.470
+In terms of getting better to and
+being less sensitive to
+
+01:50:16.470 --> 01:50:20.645
+initialization, there's a lot of
+work like a kneeling, tempering.
+
+01:50:20.645 --> 01:50:24.440
+They're both methods that
+help you escape those optima.
+
+01:50:24.440 --> 01:50:28.560
+There's new work on regularizing
+the steps you take in stochastic
+
+01:50:28.560 --> 01:50:29.760
+optimization.
+
+01:50:29.760 --> 01:50:35.404
+So trust region methods where you
+only believed that you should be
+
+01:50:35.404 --> 01:50:41.575
+in a certain region that's feasible
+given what you believe right now.
+
+01:50:41.575 --> 01:50:44.989
+>> And I think you're right that
+stochastic methods in general seem
+
+01:50:44.989 --> 01:50:46.671
+to get the better local optima.
+
+01:50:46.671 --> 01:50:49.642
+We saw that in many problems and
+
+01:50:49.642 --> 01:50:53.840
+more broadly in
+variational inference.
+
+01:50:53.840 --> 01:50:55.910
+When used with non-convex
+objective functions,
+
+01:50:55.910 --> 01:50:58.410
+stochastic optimization methods
+often get the better local optima
+
+01:50:58.410 --> 01:50:59.458
+and people have theories about why.
+
+01:50:59.458 --> 01:51:03.391
+Meambo too has some nice theories.
+
+01:51:03.391 --> 01:51:05.572
+>> Thank you.
+
+01:51:05.572 --> 01:51:08.880
+>> So my question is essentially.
+
+01:51:08.880 --> 01:51:12.000
+When you're typically using
+something like avation neural
+
+01:51:12.000 --> 01:51:14.860
+network because you want to get
+uncertainty estimates on your
+
+01:51:14.860 --> 01:51:15.750
+prediction.
+
+01:51:15.750 --> 01:51:18.680
+A lot of people do mean field
+approximations on the posterior
+
+01:51:18.680 --> 01:51:19.710
+over the weights.
+
+01:51:19.710 --> 01:51:24.950
+That's very good when you want one
+really good sample over the weights
+
+01:51:24.950 --> 01:51:28.740
+because you are doing a mean
+field with a reverse [INAUDIBLE].
+
+01:51:28.740 --> 01:51:31.870
+But to get the [INAUDIBLE]
+estimates, because
+
+01:51:31.870 --> 01:51:34.350
+of the mean field approximation,
+it might really be bad.
+
+01:51:34.350 --> 01:51:37.670
+Are you aware of any work you see
+in the posteriors over the sets
+
+01:51:37.670 --> 01:51:38.199
+of weights?
+
+01:51:39.290 --> 01:51:43.689
+Or more complicated posteriors
+in that sense for [INAUDIBLE]?
+
+01:51:43.689 --> 01:51:48.078
+>> Yes, I think this is one of the
+most interesting questions right now
+
+01:51:48.078 --> 01:51:50.773
+is how can you use these
+new approaches for
+
+01:51:50.773 --> 01:51:53.090
+uncertainty over distributions.
+
+01:51:53.090 --> 01:51:56.985
+Now the difficulty is that there
+are a lot of parameters that you
+
+01:51:56.985 --> 01:51:57.730
+have to do.
+
+01:51:57.730 --> 01:52:00.900
+These global parameters that
+typically million dimensional,
+
+01:52:00.900 --> 01:52:02.780
+10 million dimensions.
+
+01:52:02.780 --> 01:52:04.460
+And this is why I see the failure,
+
+01:52:04.460 --> 01:52:07.320
+that learning the [INAUDIBLE]
+is not good enough,
+
+01:52:07.320 --> 01:52:09.670
+because you just basically learn
+the mean and nothing else.
+
+01:52:09.670 --> 01:52:13.080
+So obviously, you can do things
+like Monte Carlo sampling but
+
+01:52:13.080 --> 01:52:14.670
+that doesn't really scale.
+
+01:52:14.670 --> 01:52:17.800
+Maybe the best way right now that
+people have explored is by building
+
+01:52:17.800 --> 01:52:19.150
+ensembles of these models.
+
+01:52:19.150 --> 01:52:22.830
+And then combining ensembles of them
+because you can parallelize it very
+
+01:52:22.830 --> 01:52:25.790
+easily and then combine the
+predictive probabilities together.
+
+01:52:25.790 --> 01:52:30.590
+But from a probabilistic and
+doing a Bayesian posterior analysis,
+
+01:52:30.590 --> 01:52:33.530
+this I think is one of the really
+interesting questions.
+
+01:52:33.530 --> 01:52:39.053
+And we'll figure them out in, I
+think in the next few years [LAUGH].
+
+01:52:39.053 --> 01:52:41.665
+>> I think we've probably
+run out of time, yeah.
+
+01:52:41.665 --> 01:52:43.231
+>> [INAUDIBLE].
+
+01:52:46.214 --> 01:52:49.795
+>> Okay.
+
+01:52:49.795 --> 01:52:51.930
+I think we're all set for questions.
+
+01:52:51.930 --> 01:52:54.798
+So if you have any other questions,
+you can find our speakers during
+
+01:52:54.798 --> 01:52:57.533
+the conference but let's give
+them one last round of applause.
+
+01:52:57.533 --> 01:53:04.360
+>> [APPLAUSE]
+
