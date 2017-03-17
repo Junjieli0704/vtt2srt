@@ -37,6 +37,7 @@
 # Autuor:   JunjieLi@CASIA
 # -------------------------------------------------------------------- #
 
+import usefulAPI
 
 def get_init_subtitles_dict():
     subtitle_dict = {}
@@ -122,6 +123,17 @@ def change_vtt_style_2_to_srt(vtt_file,srt_file):
 
     print_out_subtitle_con_list(new_subtitle_con_list,srt_file)
 
+
+
+def deal_with_a_filefold(in_file_fold,vtt_file_style = '2'):
+    vtt_file_list = usefulAPI.get_dir_files(in_file_fold,is_contain_dir=True)
+    srt_file_list = [vtt_file.replace('.vtt','.srt') for vtt_file in vtt_file_list]
+    for vtt_file,srt_file in zip(vtt_file_list,srt_file_list):
+         if vtt_file_style == '2':
+            change_vtt_style_2_to_srt(vtt_file,srt_file)
+         else:
+            change_vtt_style_1_to_srt(vtt_file,srt_file)
+
 if __name__ == '__main__':
 
     vtt_file = './vtt_style_1_files/Variational-Inference-Foundations-and-Modern-Methods_en.vtt'
@@ -132,7 +144,7 @@ if __name__ == '__main__':
     srt_file = './srt_files/Deep Learning for NLP at Oxford 2017 - Leacure 1a - Introduction [Phil Blunsom]-RP3tZFcC2e8.en.srt'
     change_vtt_style_2_to_srt(vtt_file,srt_file)
 
-
+    deal_with_a_filefold(in_file_fold = './vtt_style_2_files/')
 
 
 
