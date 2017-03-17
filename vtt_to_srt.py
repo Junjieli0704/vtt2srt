@@ -37,7 +37,16 @@
 # Autuor:   JunjieLi@CASIA
 # -------------------------------------------------------------------- #
 
-import usefulAPI
+import os
+
+def get_dir_files(dir,is_contain_dir = False):
+    file_list = []
+    if os.path.exists(dir):
+        dir_file_list = os.listdir(dir);
+        for dir_file in dir_file_list:
+            if is_contain_dir:    file_list.append(dir + dir_file);
+            else:     file_list.append(dir_file);
+    return file_list
 
 def get_init_subtitles_dict():
     subtitle_dict = {}
@@ -126,7 +135,7 @@ def change_vtt_style_2_to_srt(vtt_file,srt_file):
 
 
 def deal_with_a_filefold(in_file_fold,vtt_file_style = '2'):
-    vtt_file_list = usefulAPI.get_dir_files(in_file_fold,is_contain_dir=True)
+    vtt_file_list = get_dir_files(in_file_fold,is_contain_dir=True)
     srt_file_list = [vtt_file.replace('.vtt','.srt') for vtt_file in vtt_file_list]
     for vtt_file,srt_file in zip(vtt_file_list,srt_file_list):
          if vtt_file_style == '2':
